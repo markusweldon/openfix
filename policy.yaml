@@ -1,0 +1,49 @@
+# OpenFix policy — edit LIVE in the interview to extend behavior.
+# After changes: npx tsx src/cli.ts triage
+#
+# Interview talking point:
+#   Policy is deterministic and outside the model. Agents only see auto_fix items.
+
+# Always human_only (never send to Cursor agent)
+critical_always_human: true
+secrets_always_human: true
+iac_always_human: true
+require_file_location: true
+
+# Path segments that force human_only (regex OR-group, case-insensitive)
+# LIVE EXTEND: add "payments" or "billing" here, then re-run triage.
+sensitive_path_segments:
+  - auth
+  - crypto
+  - iam
+  - secret
+  - secrets
+  - password
+  - credential
+  - oauth
+  - jwt
+
+# Treat these path suffixes / dirs as IaC → human_only
+iac_file_extensions:
+  - ".tf"
+  - ".tfvars"
+iac_dir_segments:
+  - terraform
+  - cloudformation
+  - k8s
+  - kubernetes
+  - helm
+
+# Severities dropped as noise
+noise_severities:
+  - info
+  - note
+
+# SAST auto_fix allowed severities (must also have startLine + non-sensitive path)
+sast_auto_fix_severities:
+  - high
+  - medium
+
+# SCA: auto_fix when severity is not in this deny list
+sca_human_severities:
+  - low

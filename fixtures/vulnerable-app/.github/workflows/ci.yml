@@ -1,0 +1,52 @@
+# App CI on remediation PRs — HOW we prove the agent fix before merge
+#
+# PURPOSE (say this in the interview):
+#   OpenFix / Cursor opens the fix PR. This workflow is the system of record
+#   that tests it. Agents do not self-attest — green checks + scanner re-run do.
+#
+# You see value HERE: open a remediation PR → Checks tab → these jobs.
+
+name: "App CI (verify fix PR)"
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Why this check exists
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          # Verify agent remediations before merge
+
+          OpenFix agents propose fixes. **This job proves the code still works.**
+
+          Flow: scanner finding → Cursor fix PR → **these checks** → human merge
+          EOF
+      - run: npm install
+      - run: npm test
+
+  scanner-rerun-stub:
+    name: Scanner re-run (detective control)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Why this check exists
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          # Deterministic scanner re-run
+
+          The coding agent must **not** declare the vuln fixed.
+
+          In production this job is Semgrep / OSV / CodeQL / Snyk on the **fix PR**.
+          Fresh SARIF must show the finding cleared or reduced — that closes the loop.
+          EOF
+          echo "Stub OK — replace with real scanner; fail the job if the original rule still fires."

@@ -1,0 +1,110 @@
+# OpenFix in CI — WHERE the orchestrator runs in the enterprise SDLC
+#
+# PURPOSE (say this in the interview):
+#   Scanners finish → this workflow runs OpenFix → Cursor cloud agents open fix PRs.
+#   The laptop CLI is the prototype harness; THIS is production placement.
+#
+# Demo: Actions → "OpenFix: SARIF → fix PRs" → Run workflow (manual).
+# Requires repo secrets: CURSOR_API_KEY, OPENFIX_TARGET_REPO
+#
+# Manual-only on purpose — no idle/empty runs. Always live remediation.
+
+name: "OpenFix: SARIF → fix PRs"
+
+on:
+  workflow_dispatch:
+    inputs:
+      sarif_path:
+        description: Path to SARIF in this repo
+        required: true
+        default: fixtures/findings/demo.sarif
+      all_auto:
+        description: "Remediate multiple auto_fix findings in one run"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  openfix:
+    name: Ingest → triage → Cursor remediate
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout OpenFix
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Explain why this job exists
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          # OpenFix remediation lane
+
+          **Why this workflow matters**
+
+          | Plane | Who | This job |
+          | --- | --- | --- |
+          | Detect | Semgrep / Snyk / CodeQL (earlier CI) | Input = SARIF |
+          | Remediate | **OpenFix + Cursor cloud agents** | **This workflow** |
+          | Verify | App CI + scanner re-run on the fix PR | Next stage |
+          | Authorize | Humans | Merge the PR |
+
+          Laptop \`openfix remediate\` is the same code path. Here it runs
+          *inside the SDLC* when findings exist — software-factory style.
+          EOF
+
+      - name: Ingest SARIF + triage
+        id: triage
+        run: |
+          npx tsx src/cli.ts ingest "${{ inputs.sarif_path }}"
+          npx tsx src/cli.ts triage | tee triage.out
+          {
+            echo "## Triage (policy — no LLM)"
+            echo '```'
+            cat triage.out
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Cursor cloud remediate (live)
+        id: remediate
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          OPENFIX_TARGET_REPO: ${{ secrets.OPENFIX_TARGET_REPO }}
+          OPENFIX_STARTING_REF: main
+          OPENFIX_MODEL: composer-2.5
+          OPENFIX_MAX_CONCURRENT: "2"
+        run: |
+          EXTRA=()
+          if [ "${{ inputs.all_auto }}" = "true" ]; then
+            EXTRA+=(--all-auto)
+          fi
+          npx tsx src/cli.ts remediate "${EXTRA[@]}" | tee remediate.out
+          {
+            echo "## Remediation (Cursor SDK)"
+            echo '```'
+            tail -n 80 remediate.out
+            echo '```'
+            echo ""
+            echo "Look for \`PR: https://...\` above — that PR still needs app CI + scanner re-run + human review before merge."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Pre-merge verify reminder
+        run: |
+          npx tsx src/cli.ts verify | tee verify.out
+          {
+            echo "## Before anyone merges"
+            echo '```'
+            cat verify.out
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

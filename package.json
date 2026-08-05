@@ -1,0 +1,31 @@
+{
+  "name": "openfix",
+  "version": "0.1.0",
+  "description": "Enterprise SDLC remediation: scanner findings in, Cursor agents remediate, PRs out for human review",
+  "type": "module",
+  "bin": {
+    "openfix": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "openfix": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@cursor/sdk": "^1.0.26",
+    "commander": "^15.0.0",
+    "dotenv": "^17.4.2",
+    "yaml": "^2.9.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "tsx": "^4.23.5",
+    "typescript": "^7.0.2"
+  }
+}
