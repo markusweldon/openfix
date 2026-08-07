@@ -2,12 +2,10 @@
  * Ingest — turn scanner output into OpenFix Findings.
  *
  * Supports:
- *   1) SARIF 2.x (industry interchange — Semgrep, CodeQL, many SCA tools)
- *   2) OpenFix findings JSON (version: 1) for anything that isn't SARIF
+ *   1) SARIF 2.x (Semgrep, CodeQL, many SCA tools)
+ *   2) OpenFix findings JSON (version: 1) for non-SARIF sources
  *
- * Interview talking point:
- *   "SARIF = Static Analysis Results Interchange Format. We're scanner-agnostic:
- *    we don't call Snyk's API; we consume the format enterprises already emit in CI."
+ * SARIF is the CI interchange format; we consume artifacts, not vendor APIs.
  */
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
@@ -204,8 +202,16 @@ export function normalizeFindingsJson(raw: unknown): Finding[] {
   return parsed.findings;
 }
 
-/** Entry point used by `openfix ingest <path>`. */
+/** Entry point used by `openfix ingest <path>` (CLI also merges multiple paths). */
 export async function loadFindings(path: string): Promise<Finding[]> {
+  const { findings } = await loadFindingsWithSource(path);
+  return findings;
+}
+
+/** Load findings and classify source kind (sarif vs openfix json). */
+export async function loadFindingsWithSource(
+  path: string,
+): Promise<{ findings: Finding[]; kind: "sarif" | "json" }> {
   const text = await readFile(path, "utf8");
   const raw: unknown = JSON.parse(text);
 
@@ -216,7 +222,7 @@ export async function loadFindings(path: string): Promise<Finding[]> {
     "runs" in raw &&
     Array.isArray((raw as { runs: unknown }).runs)
   ) {
-    return normalizeSarif(raw);
+    return { findings: normalizeSarif(raw), kind: "sarif" };
   }
 
   if (
@@ -225,7 +231,7 @@ export async function loadFindings(path: string): Promise<Finding[]> {
     "findings" in raw &&
     Array.isArray((raw as { findings: unknown }).findings)
   ) {
-    return normalizeFindingsJson(raw);
+    return { findings: normalizeFindingsJson(raw), kind: "json" };
   }
 
   throw new Error(

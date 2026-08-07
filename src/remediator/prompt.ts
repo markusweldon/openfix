@@ -1,11 +1,9 @@
 /**
  * Prompts sent to the Cursor agent.
  *
- * Interview talking point:
- *   The prompt encodes separation of duties in writing:
- *   scanner detected → agent remediates → human merges.
- *   PR body must cite tool/ruleId/fingerprint (audit trail).
- *   Agent must NOT claim "fixed" until CI re-runs the deterministic scanner.
+ * Encodes separation of duties: scanner detected → agent remediates → human merges.
+ * PR body must cite tool/ruleId/fingerprint. Agent must not claim "fixed" until
+ * CI re-runs the deterministic scanner on the fix PR.
  */
 import type { Finding } from "../types/finding.js";
 
@@ -20,8 +18,9 @@ export function buildRemediationPrompt(finding: Finding): string {
 ## Separation of duties (mandatory)
 - Detection came from an EXTERNAL deterministic security scanner — not from you.
 - You propose a fix only. Do NOT merge. Do NOT push to main/master.
-- Open (or update) a pull request for HUMAN review.
+- Open (or update) a **draft** pull request for HUMAN review (Cursor default is fine — leave as draft).
 - Cite the scanner provenance below in the PR body.
+- Do NOT merge. Do NOT mark the PR ready-for-review unless a human asks.
 
 ## Scanner provenance
 - Tool: ${finding.tool}
@@ -51,6 +50,11 @@ export function buildRemediationPrompt(finding: Finding): string {
 - Never commit secrets. Never force-push. Never delete .git or cloud credentials.
 - If the fix is unsafe or unclear, stop and explain in the PR / response instead of guessing.
 - Do NOT claim the vulnerability is fully remediated until CI scanner evidence exists.
+
+## Chat vs PR body (important)
+- Put Detection / Remediation / Verification / gate language in the **PR description only**.
+- In chat/stream: short status lines only (e.g. "Investigating…", "Applying fix…", "Draft PR opened").
+- Do NOT paste the full PR body, markdown tables, or long code fences into the chat stream.
 `;
 }
 
@@ -63,7 +67,7 @@ ${extra}
 
 Remember:
 - Detection was from an external scanner; you only remediate.
-- Open/update a PR for human review; never merge to main.
+- Open/update a draft PR for human review; never merge to main; do not mark ready unless asked.
 - CI must re-run the deterministic scanner; do not self-attest that the finding is fixed.
 `;
 }

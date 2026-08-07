@@ -2,6 +2,7 @@
  * Local state under .openfix/ (gitignored).
  *
  * Stores:
+ *   currentRun      — OpenFix job context (repo + SHA + source) for this ingest
  *   findings[]      — last ingest
  *   remediations[]  — agent ids, PR urls, fingerprints already handled
  *
@@ -14,11 +15,33 @@ import { z } from "zod";
 
 const STATE_DIR = ".openfix";
 
+export const IngestSourceSchema = z.object({
+  kind: z.enum(["sarif", "json", "mcp", "simulated"]),
+  detail: z.string(),
+});
+
+export type IngestSource = z.infer<typeof IngestSourceSchema>;
+
+/** Binds findings to a source snapshot for pipeline provenance. */
+export const OpenFixRunSchema = z.object({
+  openfixRunId: z.string(),
+  repoUrl: z.string().optional(),
+  commitSha: z.string().optional(),
+  ref: z.string().optional(),
+  source: IngestSourceSchema,
+  createdAt: z.string(),
+  findingCount: z.number().int().nonnegative().optional(),
+});
+
+export type OpenFixRun = z.infer<typeof OpenFixRunSchema>;
+
 const RemediationRecordSchema = z.object({
   findingId: z.string(),
   fingerprint: z.string(),
   agentId: z.string(),
   runId: z.string().optional(),
+  /** OpenFix job that spawned this remediation (not the Cursor agent run id). */
+  openfixRunId: z.string().optional(),
   status: z.enum(["started", "finished", "error", "cancelled"]),
   prUrl: z.string().optional(),
   startedAt: z.string(),
@@ -31,6 +54,7 @@ export type RemediationRecord = z.infer<typeof RemediationRecordSchema>;
 const StateSchema = z.object({
   findings: z.array(FindingSchema).default([]),
   remediations: z.array(RemediationRecordSchema).default([]),
+  currentRun: OpenFixRunSchema.optional(),
   /** Most recent cloud agent — used by `status --last` / `resume --last`. */
   lastAgentId: z.string().optional(),
   lastPrUrl: z.string().optional(),
@@ -53,6 +77,10 @@ function withStateLock<T>(fn: () => Promise<T>): Promise<T> {
 
 function statePath(cwd = process.cwd()): string {
   return path.join(cwd, STATE_DIR, "state.json");
+}
+
+function runPath(openfixRunId: string, cwd = process.cwd()): string {
+  return path.join(cwd, STATE_DIR, "runs", `${openfixRunId}.json`);
 }
 
 export async function ensureStateDir(cwd = process.cwd()): Promise<string> {
@@ -78,14 +106,36 @@ export async function saveState(
   await writeFile(statePath(cwd), JSON.stringify(state, null, 2) + "\n", "utf8");
 }
 
-/** Replace the ingested finding set (full refresh per ingest). */
+/** Persist run JSON under .openfix/runs/ for CI artifacts / audit. */
+export async function saveRunFile(
+  run: OpenFixRun,
+  cwd = process.cwd(),
+): Promise<string> {
+  const dir = path.join(cwd, STATE_DIR, "runs");
+  await mkdir(dir, { recursive: true });
+  const file = runPath(run.openfixRunId, cwd);
+  await writeFile(file, JSON.stringify(run, null, 2) + "\n", "utf8");
+  return file;
+}
+
+/** Replace findings and bind them to an OpenFix run (repo + SHA + source). */
 export async function saveFindings(
   findings: Finding[],
+  run: OpenFixRun,
   cwd = process.cwd(),
 ): Promise<void> {
   const state = await loadState(cwd);
   state.findings = findings;
+  state.currentRun = { ...run, findingCount: findings.length };
   await saveState(state, cwd);
+  await saveRunFile(state.currentRun, cwd);
+}
+
+export async function getCurrentRun(
+  cwd = process.cwd(),
+): Promise<OpenFixRun | undefined> {
+  const state = await loadState(cwd);
+  return state.currentRun;
 }
 
 /** Insert or update a remediation row keyed by agentId. */
@@ -95,16 +145,20 @@ export async function upsertRemediation(
 ): Promise<void> {
   await withStateLock(async () => {
     const state = await loadState(cwd);
+    const withRun: RemediationRecord = {
+      ...record,
+      openfixRunId: record.openfixRunId ?? state.currentRun?.openfixRunId,
+    };
     const idx = state.remediations.findIndex(
-      (r) => r.agentId === record.agentId,
+      (r) => r.agentId === withRun.agentId,
     );
-    if (idx >= 0) state.remediations[idx] = record;
-    else state.remediations.push(record);
+    if (idx >= 0) state.remediations[idx] = withRun;
+    else state.remediations.push(withRun);
     // Track latest agent for demo `--last` (even mid-run / on error).
-    if (record.agentId && record.agentId !== "unknown") {
-      state.lastAgentId = record.agentId;
-      if (record.runId) state.lastRunId = record.runId;
-      if (record.prUrl) state.lastPrUrl = record.prUrl;
+    if (withRun.agentId && withRun.agentId !== "unknown") {
+      state.lastAgentId = withRun.agentId;
+      if (withRun.runId) state.lastRunId = withRun.runId;
+      if (withRun.prUrl) state.lastPrUrl = withRun.prUrl;
     }
     await saveState(state, cwd);
   });

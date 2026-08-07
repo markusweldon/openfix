@@ -1,9 +1,8 @@
 /**
- * OpenFix types — the shared data model for the whole pipeline.
+ * OpenFix types — shared data model for the pipeline.
  *
- * Interview talking point:
- *   Scanner output (any vendor) → Finding → Policy Decision → Agent PR
- * Everything downstream speaks "Finding", never raw Semgrep/Snyk/OSV shapes.
+ * Scanner output (any vendor) → Finding → Policy Decision → Agent PR.
+ * Downstream code speaks Finding, never raw Semgrep/Snyk/OSV shapes.
  */
 import { z } from "zod";
 
@@ -52,9 +51,9 @@ export const FindingsFileSchema = z.object({
 export type FindingsFile = z.infer<typeof FindingsFileSchema>;
 
 /**
- * Policy outcomes — THIS is the enterprise control plane.
+ * Policy outcomes — control plane decisions.
  * - auto_fix: Cursor agent may open a remediation PR
- * - human_only: do NOT call the agent (secrets/critical/auth/etc.)
+ * - human_only: do not call the agent (secrets/critical/auth/etc.)
  * - suppress_noise: drop info/style/duplicates
  */
 export const DecisionSchema = z.enum([

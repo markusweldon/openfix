@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 /**
- * OpenFix CLI — demo harness for the remediation pipeline.
+ * OpenFix CLI — control plane for the remediation pipeline.
  *
- * Commands map 1:1 to the interview story:
- *   ingest    → load SARIF / findings JSON (detection plane)
- *   triage    → deterministic policy (no agents) — reads policy.yaml
- *   remediate → Cursor cloud agents open fix PRs (remediation lane)
+ * Commands:
+ *   ingest    → SARIF/JSON path(s) (merge + fingerprint dedupe), or --from simulated:…;
+ *               writes OpenFix run context (repo / SHA / run id) under .openfix/
+ *   triage    → deterministic policy (no agents) — reads policy.yaml; prints run line
+ *   remediate → Cursor cloud agents open fix PRs (finding-lane board by default)
  *   status    → inspect durable agent by bc-… id (async)
  *   resume    → follow-up turn on same agent (multi-step)
- *   verify    → pre-merge checklist (CI + scanner re-run + human)
+ *   verify    → poll App CI on the fix PR (via gh); optional --checklist
  *
- * Enterprise scale: same logic would run from a GitHub Action on SARIF upload;
- * CLI is the prototype control plane, not the final UX.
+ * Same logic can run from a GitHub Action on SARIF upload; the CLI is the
+ * prototype control plane and live demo surface.
  */
 import { Command } from "commander";
-import { loadFindings } from "./ingest/load.js";
 import {
   triageAll,
   summarizeTriage,
@@ -26,6 +26,8 @@ import {
   inFlightFingerprints,
   getLastAgentId,
   getLastPrUrl,
+  type OpenFixRun,
+  type IngestSource,
 } from "./state/store.js";
 import { getConfig } from "./config.js";
 import {
@@ -33,14 +35,22 @@ import {
   statusAgent,
   resumeAgent,
 } from "./remediator/agent.js";
-import { printVerifyChecklist } from "./verify.js";
+import { runVerify } from "./verify.js";
+import { loadFindingsWithSource } from "./ingest/load.js";
+import {
+  loadSimulatedMcpFindings,
+  parseSimulatedFromSpec,
+} from "./ingest/simulated-mcp.js";
 import {
   parseAgentId,
   printFleetSummary,
-  printNextSteps,
+  printFleetNextSteps,
+  LaneBoard,
+  findingLocation,
+  uniqueFindingSlugs,
   type FleetRow,
 } from "./cli/helpers.js";
-import type { TriageResult } from "./types/finding.js";
+import type { Finding, TriageResult } from "./types/finding.js";
 
 const program = new Command();
 
@@ -62,20 +72,138 @@ async function resolveAgentId(
   return parseAgentId(agentIdArg);
 }
 
+function buildRunFromConfig(source: IngestSource): OpenFixRun {
+  const cfg = getConfig();
+  return {
+    openfixRunId: cfg.openfixRunId,
+    repoUrl: cfg.targetRepo,
+    commitSha: cfg.commitSha,
+    ref: cfg.startingRef,
+    source,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+async function detectFileSource(
+  filePath: string,
+): Promise<{ findings: Finding[]; source: IngestSource }> {
+  const { findings, kind } = await loadFindingsWithSource(filePath);
+  return { findings, source: { kind, detail: filePath } };
+}
+
+function printIngestSummary(
+  findings: Finding[],
+  run: OpenFixRun,
+  runFileHint?: string,
+  dedupe?: { raw: number; dropped: number },
+): void {
+  console.log(`Ingested ${findings.length} finding(s) [${run.source.kind}]`);
+  if (dedupe && dedupe.dropped > 0) {
+    console.log(
+      `  dedupe        kept ${findings.length} · dropped ${dedupe.dropped} duplicate fingerprint(s) (of ${dedupe.raw})`,
+    );
+  }
+  console.log(`  openfixRunId  ${run.openfixRunId}`);
+  if (run.repoUrl) console.log(`  repoUrl       ${run.repoUrl}`);
+  if (run.commitSha) console.log(`  commitSha     ${run.commitSha}`);
+  console.log(`  source        ${run.source.kind}: ${run.source.detail}`);
+  if (runFileHint) console.log(`  run file      ${runFileHint}`);
+  for (const f of findings) {
+    console.log(
+      `  - [${f.severity}] ${f.tool}/${f.ruleId} ${f.file ?? "?"}${f.startLine ? `:${f.startLine}` : ""} (${f.fingerprint})`,
+    );
+  }
+}
+
+/** First-wins dedupe by fingerprint (exact re-uploads / overlapping artifacts). */
+function dedupeByFingerprint(findings: Finding[]): {
+  findings: Finding[];
+  raw: number;
+  dropped: number;
+} {
+  const seen = new Set<string>();
+  const out: Finding[] = [];
+  for (const f of findings) {
+    if (seen.has(f.fingerprint)) continue;
+    seen.add(f.fingerprint);
+    out.push(f);
+  }
+  return {
+    findings: out,
+    raw: findings.length,
+    dropped: findings.length - out.length,
+  };
+}
+
 // --- ingest: scanners → local state ---
 program
   .command("ingest")
-  .description("Ingest SARIF or OpenFix findings JSON into local state")
-  .argument("<path>", "Path to SARIF (.sarif/.json) or findings JSON")
-  .action(async (path: string) => {
-    const findings = await loadFindings(path);
-    await saveFindings(findings);
-    console.log(`Ingested ${findings.length} finding(s) from ${path}`);
-    for (const f of findings) {
-      console.log(
-        `  - [${f.severity}] ${f.tool}/${f.ruleId} ${f.file ?? "?"}${f.startLine ? `:${f.startLine}` : ""} (${f.fingerprint})`,
+  .description(
+    "Ingest SARIF/JSON path(s), or --from simulated:semgrep|snyk (MCP-style adapter stub)",
+  )
+  .argument(
+    "[paths...]",
+    "One or more SARIF / findings JSON paths (merged + fingerprint-deduped)",
+  )
+  .option(
+    "--from <spec>",
+    "Adapter ingest: simulated:semgrep | simulated:snyk | mcp:semgrep | mcp:snyk",
+  )
+  .action(async (paths: string[], opts: { from?: string }) => {
+    let findings: Finding[];
+    let source: IngestSource;
+    let dedupe: { raw: number; dropped: number } | undefined;
+
+    if (opts.from) {
+      if (paths.length > 0) {
+        console.error("Use either file path(s) or --from, not both.");
+        process.exitCode = 1;
+        return;
+      }
+      const scanner = parseSimulatedFromSpec(opts.from);
+      if (!scanner) {
+        console.error(
+          `Unknown --from ${opts.from}. Use simulated:semgrep, simulated:snyk, mcp:semgrep, or mcp:snyk.`,
+        );
+        process.exitCode = 1;
+        return;
+      }
+      findings = loadSimulatedMcpFindings(scanner);
+      source = {
+        kind: opts.from.toLowerCase().includes("mcp") ? "mcp" : "simulated",
+        detail: opts.from,
+      };
+    } else if (paths.length > 0) {
+      const merged: Finding[] = [];
+      const kinds: Array<"sarif" | "json"> = [];
+      for (const p of paths) {
+        const loaded = await detectFileSource(p);
+        merged.push(...loaded.findings);
+        kinds.push(loaded.source.kind as "sarif" | "json");
+      }
+      const deduped = dedupeByFingerprint(merged);
+      findings = deduped.findings;
+      dedupe = { raw: deduped.raw, dropped: deduped.dropped };
+      source = {
+        kind: kinds.includes("sarif") ? "sarif" : "json",
+        detail: paths.join(", "),
+      };
+    } else {
+      console.error(
+        "Pass SARIF/JSON path(s), or --from simulated:semgrep (see --help).",
       );
+      process.exitCode = 1;
+      return;
     }
+
+    const run = buildRunFromConfig(source);
+    await saveFindings(findings, run);
+    printIngestSummary(
+      findings,
+      run,
+      `.openfix/runs/${run.openfixRunId}.json`,
+      dedupe,
+    );
   });
 
 // --- triage: policy only (great place to pause and talk in the demo) ---
@@ -94,6 +222,15 @@ program
     const results = triageAll(state.findings, {
       inFlightFingerprints: inFlightFingerprints(state),
     });
+    if (state.currentRun) {
+      const r = state.currentRun;
+      console.log(
+        `\nOpenFix run  ${r.openfixRunId}` +
+          (r.repoUrl ? `  repo=${r.repoUrl}` : "") +
+          (r.commitSha ? `  sha=${r.commitSha.slice(0, 7)}` : "") +
+          `  source=${r.source.kind}`,
+      );
+    }
     printTriage(results);
     console.log("\nSummary:", summarizeTriage(results));
     console.log("(policy source: ./policy.yaml — edit to live-extend)");
@@ -110,11 +247,16 @@ program
   )
   .option("--all-auto", "Drain auto_fix queue up to OPENFIX_MAX_CONCURRENT")
   .option("--fingerprint <fp>", "Remediate a single finding by fingerprint")
+  .option(
+    "--verbose",
+    "Stream full agent assistant text (finding-slug labels); disable lane board",
+  )
   .action(
     async (opts: {
       agents?: number;
       allAuto?: boolean;
       fingerprint?: string;
+      verbose?: boolean;
     }) => {
       const state = await loadState();
       if (state.findings.length === 0) {
@@ -163,49 +305,78 @@ program
       const batchSize = Math.min(want, queue.length, cfg.maxConcurrent);
       const batch = queue.slice(0, batchSize);
       const remainingAfter = Math.max(0, queue.length - batch.length);
-      const concurrent = batch.length > 1;
+      const verbose = Boolean(opts.verbose);
+      const useBoard = !verbose;
 
-      console.log(`
-── OpenFix remediate ──
-  Scale story: SARIF is per app; this lane runs in each repo's pipeline.
-  Concurrency here = factory fan-out inside one app's queue (not a multi-repo router).
-`);
+      const slugs = uniqueFindingSlugs(batch.map((r) => r.finding));
+
       console.log(
-        `Auto-fix queue: ${queue.length} eligible (ordered by severity, highest first)`,
+        `\n── OpenFix remediate ──  ${batch.length} lane${batch.length === 1 ? "" : "s"} · ${queue.length} eligible · ${remainingAfter} remain after\n`,
       );
-      for (const [i, r] of queue.entries()) {
-        const marker = i < batch.length ? "NEXT" : "queued";
-        console.log(
-          `  [${marker}] ${r.finding.severity.padEnd(8)} ${r.finding.tool}/${r.finding.ruleId}`,
+
+      let board: LaneBoard | undefined;
+      if (useBoard) {
+        board = new LaneBoard(
+          batch.map((r, i) => ({
+            id: r.finding.fingerprint,
+            severity: r.finding.severity,
+            finding: slugs[i]!,
+            location: findingLocation(r.finding),
+          })),
+          remainingAfter,
         );
-        console.log(
-          `           ${r.finding.file ?? "?"}${r.finding.startLine ? `:${r.finding.startLine}` : ""}  fp=${r.finding.fingerprint}`,
-        );
+        board.start();
+      } else {
+        for (const [i, r] of batch.entries()) {
+          console.log(
+            `  ${r.finding.severity.padEnd(8)} ${slugs[i]!.padEnd(20)} ${findingLocation(r.finding)}`,
+          );
+        }
+        if (remainingAfter > 0) {
+          console.log(
+            `  … ${remainingAfter} more queued (severity-ordered)`,
+          );
+        }
+        console.log("");
       }
-      console.log(
-        `\nThis run: ${batch.length} concurrent agent(s) (requested=${want}, maxConcurrent=${cfg.maxConcurrent}); ${remainingAfter} left in queue after`,
-      );
 
       const fleetRows: FleetRow[] = [];
-      const settled = await Promise.allSettled(
-        batch.map(async (r, i) => {
-          const label = concurrent ? `A${i + 1}` : undefined;
-          const record = await remediateFinding(r.finding, {
-            streamLabel: label,
-            suppressNextSteps: concurrent,
-          });
-          return {
-            label: label ?? "A1",
-            fingerprint: r.finding.fingerprint,
-            ruleId: `${r.finding.tool}/${r.finding.ruleId}`,
-            record,
-          };
-        }),
-      );
+      let settled: PromiseSettledResult<{
+        label: string;
+        fingerprint: string;
+        ruleId: string;
+        record: Awaited<ReturnType<typeof remediateFinding>>;
+      }>[] = [];
+
+      try {
+        settled = await Promise.allSettled(
+          batch.map(async (r, i) => {
+            const slug = slugs[i]!;
+            const fp = r.finding.fingerprint;
+            const record = await remediateFinding(r.finding, {
+              streamLabel: slug,
+              verbose,
+              quiet: useBoard,
+              suppressNextSteps: true,
+              onPhase: board
+                ? (phase, meta) => board.setPhase(fp, phase, meta)
+                : undefined,
+            });
+            return {
+              label: slug,
+              fingerprint: fp,
+              ruleId: `${r.finding.tool}/${r.finding.ruleId}`,
+              record,
+            };
+          }),
+        );
+      } finally {
+        board?.finish();
+      }
 
       for (const [i, outcome] of settled.entries()) {
         const r = batch[i]!;
-        const label = concurrent ? `A${i + 1}` : "A1";
+        const label = slugs[i]!;
         if (outcome.status === "fulfilled") {
           const { record } = outcome.value;
           fleetRows.push({
@@ -232,15 +403,29 @@ program
         }
       }
 
-      if (concurrent) {
-        printFleetSummary(fleetRows);
-        const lastOk = [...fleetRows]
-          .reverse()
-          .find((row) => row.agentId && row.agentId !== "unknown");
-        if (lastOk?.agentId) printNextSteps(lastOk.agentId, lastOk.prUrl);
-      }
+      printFleetSummary(fleetRows, remainingAfter);
+      printFleetNextSteps(fleetRows);
 
-      if (settled.some((s) => s.status === "rejected")) {
+      // Fail CLI/CI on startup throws, mid-run error/cancel, or finished-with-no-PR.
+      const rejected = settled.some((s) => s.status === "rejected");
+      const badRecord = fleetRows.some(
+        (row) => row.status !== "finished" || !row.prUrl,
+      );
+      if (rejected || badRecord) {
+        const reasons: string[] = [];
+        if (rejected) reasons.push("one or more agents threw at startup");
+        for (const row of fleetRows) {
+          if (row.status !== "finished") {
+            reasons.push(
+              `${row.label} status=${row.status}${row.error ? ` (${row.error})` : ""}`,
+            );
+          } else if (!row.prUrl) {
+            reasons.push(`${row.label} finished but no PR URL`);
+          }
+        }
+        console.error(
+          `\nRemediate failed — orchestrator exiting non-zero:\n  - ${reasons.join("\n  - ")}`,
+        );
         process.exitCode = 1;
       }
     },
@@ -275,18 +460,22 @@ program
     },
   );
 
-// --- verify: what must pass before a human merges the fix PR ---
+// --- verify: observe App CI on the fix PR ---
 program
   .command("verify")
   .description(
-    "Print pre-merge verification checklist (CI + scanner re-run + human review)",
+    "Poll App CI checks on the fix PR (via gh); optional full pre-merge checklist",
   )
-  .option("--pr <url>", "Remediation PR URL to attach to the checklist")
+  .option("--pr <url>", "Remediation PR URL to verify")
   .option("--last", "Use lastPrUrl from .openfix/state.json")
-  .action(async (opts: { pr?: string; last?: boolean }) => {
+  .option(
+    "--checklist",
+    "Print the full pre-merge / branch-protection checklist",
+  )
+  .action(async (opts: { pr?: string; last?: boolean; checklist?: boolean }) => {
     let pr = opts.pr;
     if (opts.last && !pr) pr = await getLastPrUrl();
-    printVerifyChecklist(pr);
+    process.exitCode = await runVerify(pr, { checklist: opts.checklist });
   });
 
 /** Pretty-print triage buckets; auto_fix list is severity-sorted (the queue). */

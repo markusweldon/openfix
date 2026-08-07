@@ -1,8 +1,7 @@
-# OpenFix policy — edit LIVE in the interview to extend behavior.
-# After changes: npx tsx src/cli.ts triage
+# OpenFix policy — deterministic gates for triage.
+# After edits: npx tsx src/cli.ts triage
 #
-# Interview talking point:
-#   Policy is deterministic and outside the model. Agents only see auto_fix items.
+# Policy lives outside the model. Agents only see auto_fix items.
 
 # Always human_only (never send to Cursor agent)
 critical_always_human: true
@@ -11,7 +10,7 @@ iac_always_human: true
 require_file_location: true
 
 # Path segments that force human_only (regex OR-group, case-insensitive)
-# LIVE EXTEND: add "payments" or "billing" here, then re-run triage.
+# Example extend: add "payments" or "billing", then re-run triage.
 sensitive_path_segments:
   - auth
   - crypto

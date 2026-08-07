@@ -1,14 +1,13 @@
 /**
- * Policy engine — deterministic triage. NO LLM here on purpose.
+ * Policy engine — deterministic triage. No LLM here on purpose.
  *
- * Interview talking point:
- *   "Detection is from scanners. Who gets an agent is decided by policy.yaml,
- *    not by the model. Live-extend by editing policy.yaml and re-running triage."
+ * Who gets an agent is decided by policy.yaml, not by the model. Edit the YAML
+ * and re-run triage to change gates without touching agent prompts.
  *
  * Three buckets:
- *   auto_fix      → remediate() will spawn a Cursor cloud agent
- *   human_only     → AppSec/eng handles (we still SHOW these in triage)
- *   suppress_noise → don't waste spend
+ *   auto_fix      → remediate() spawns a Cursor cloud agent
+ *   human_only     → AppSec/eng handles (still shown in triage)
+ *   suppress_noise → skip (info/note, in-flight fingerprints, etc.)
  */
 import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
