@@ -8,6 +8,7 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE, MSO_CONNECTOR
+from pptx.oxml.xmlchemy import OxmlElement
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,7 +16,9 @@ OUT = ROOT / 'docs/prep'
 DIAGRAMS = OUT / 'diagrams'
 OUT.mkdir(parents=True, exist_ok=True)
 DIAGRAMS.mkdir(parents=True, exist_ok=True)
-BG, CARD, MINT, WHITE, MUTED, CORAL, LINE = '101F2A', '19313D', 'A2E5C5', 'F4F3EB', 'B1C0C7', 'F5A78C', '395462'
+BG, BG_END, CARD = '160A2C', '3A185F', '27143F'
+MINT, WHITE, MUTED, CORAL, LINE = 'D7B0FF', 'FAF6FF', 'D0C1DF', 'FF96D0', '694789'
+CYAN, GRID = '82DDEA', '764396'
 FONT = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
 BOLD = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
 MONO = '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'
@@ -24,15 +27,59 @@ def txt(x, y, w, h, text, size=30, color=WHITE, bold=False, mono=False):
     return dict(kind='text', x=x, y=y, w=w, h=h, text=text, size=size, color=color, bold=bold, mono=mono)
 
 def rect(x, y, w, h, fill=CARD, stroke=None):
+    if stroke is None and fill == CARD:
+        stroke = '583474'
     return dict(kind='rect', x=x, y=y, w=w, h=h, fill=fill, stroke=stroke)
 
 def line(x1, y1, x2, y2, color=LINE, arrow=True):
+    if arrow and color == MINT:
+        color = CYAN
     return dict(kind='line', x1=x1, y1=y1, x2=x2, y2=y2, color=color, arrow=arrow)
+
+def rgb(value):
+    return tuple(int(value[i:i+2],16) for i in (0,2,4))
+
+def background_image():
+    start, end = rgb(BG), rgb(BG_END)
+    strip=Image.new('RGB',(1600,1))
+    strip.putdata([tuple(round(a+(b-a)*x/1599) for a,b in zip(start,end)) for x in range(1600)])
+    image=strip.resize((1600,900))
+    overlay=Image.new('RGBA',image.size,(0,0,0,0));draw=ImageDraw.Draw(overlay)
+    # A very quiet perspective floor gives the palette its synthwave character.
+    # Keep the texture below the slide's information-bearing area.
+    for y in (785,812,850,899):
+        draw.line((0,y,1600,y),fill=(*rgb(GRID),48),width=1)
+    for x in range(-800,2401,200):
+        draw.line((800+(x-800)*.60,770,x,900),fill=(*rgb(GRID),48),width=1)
+    return Image.alpha_composite(image.convert('RGBA'),overlay).convert('RGB')
+
+def svg_background():
+    rows=[f'<rect width="1600" height="900" fill="url(#synthwave-background)"/>']
+    for y in (785,812,850,899):
+        rows.append(f'<line x1="0" y1="{y}" x2="1600" y2="{y}" stroke="#{GRID}" stroke-opacity=".19"/>')
+    for x in range(-800,2401,200):
+        rows.append(f'<line x1="{800+(x-800)*.60}" y1="770" x2="{x}" y2="900" stroke="#{GRID}" stroke-opacity=".19"/>')
+    return rows
+
+def ppt_background(slide):
+    shape=slide.shapes.add_shape(MSO_SHAPE.RECTANGLE,0,0,Inches(16),Inches(9))
+    shape.fill.gradient()
+    shape.fill.gradient_angle=0
+    shape.fill.gradient_stops[0].color.rgb=RGBColor.from_string(BG)
+    shape.fill.gradient_stops[1].color.rgb=RGBColor.from_string(BG_END)
+    shape.line.fill.background()
+    segments=[(0,y,1600,y) for y in (785,812,850,899)]
+    segments += [(800+(x-800)*.60,770,x,900) for x in range(-800,2401,200)]
+    for x,y,xx,yy in segments:
+        connector=slide.shapes.add_connector(MSO_CONNECTOR.STRAIGHT,Inches(x/100),Inches(y/100),Inches(xx/100),Inches(yy/100))
+        connector.line.color.rgb=RGBColor.from_string(GRID);connector.line.width=Pt(.6)
+        color=connector.line._get_or_add_ln().find('.//{http://schemas.openxmlformats.org/drawingml/2006/main}srgbClr')
+        alpha=OxmlElement('a:alpha');alpha.set('val','19000');color.append(alpha)
 
 def wrap(text, width=43):
     return '\n'.join(textwrap.fill(part, width=width) if part else '' for part in text.split('\n'))
 
-def base(title, subtitle='', number=1, label='ARCHITECTURE PROPOSAL + WORKFLOW PROTOTYPE'):
+def base(title, subtitle='', number=1, label='CUSTOMER WORKFLOW / VISUAL REFERENCE'):
     s = [rect(0, 0, 1600, 900, BG), rect(70, 62, 42, 7, MINT),
          txt(130, 47, 1300, 36, 'OPENFIX / ' + label, 17, MINT, True),
          txt(70, 125, 1470, 100, title, 56, WHITE, True),
@@ -55,7 +102,7 @@ def node(x, y, w, h, num, title, sub, accent=MINT):
 def lifecycle(number=3):
     s = base('The complete security loop', 'Evidence, acceptance, verification, and closure are separate decisions.', number)
     xs = [75, 460, 845, 1230]
-    data = [('01', 'Scope', 'Assets, boundaries, invariants'), ('02', 'Discover / import', 'Codex Security + scanners'),
+    data = [('01', 'Inventory + scope', 'Assets, owners, boundaries'), ('02', 'Discover / import', 'Codex Security + scanners'),
             ('03', 'Validate', 'Confirmed / disproved / gaps'), ('04', 'Triage + accept', 'Owner, priority, decision')]
     for x, (n,t,b) in zip(xs,data): s += node(x,320,295,175,n,t,b)
     for a,b in zip(xs,xs[1:]): s.append(line(a+298,407,b-8,407,MINT))
@@ -98,7 +145,7 @@ for i,(title,sub) in enumerate([('UNDERSTAND','Scope the customer problem'),('PR
     s += card(75+i*510,485,470,280,f'0{i+1}',title,sub,body_size=25)
 add(s,'Open with the customer outcome. Explain that this is an independent project, with a tested lifecycle prototype and a proposed integration architecture. Ask permission to use a visual only if useful; a discovery conversation does not need a full presentation.')
 
-s=base('Start with the customer outcome','Original practice scenario: a multi-tenant billing service with a growing security backlog.',2)
+s=base('Start with the customer outcome','Let the provided scenario determine the scope. The billing example is only a practice vignette.',2)
 for i,(k,t,b) in enumerate([('Problem','Where is work stuck?','Detection noise, investigation, ownership, patch creation, or review?'),('Scope','One service, one issue class','Identify the security owner, service owner, approved data, and success criteria.'),('Value','Measure accepted fixes','Compare end-to-end effort, verified outcomes, review burden, and failure rate.')]):
     s += card(75+i*510,335,470,440,k,t,b)
 add(s,'Ask what hurts and who owns the workflow before discussing products. Establish current effort and remediation time. The billing scenario is invented for practice and should never be presented as the actual customer scenario. Avoid invented ROI numbers.')
@@ -125,11 +172,11 @@ for i,(k,t,b,c) in enumerate([('Evidence supports it','Confirmed','Accept for a 
     s += card(75+i*510,335,470,440,k,t,b,c)
 add(s,'A false positive or incomplete validation is a useful output. Source-based analysis can support a finding without runtime reproduction, but execution-dependent uncertainty must remain open. A completed scan can have deferred surfaces and coverage gaps; completion and completeness are different measures.')
 
-s=base('One finding, all the way to review','Runnable now: a lifecycle simulation that makes no model or deployment calls.',8)
-steps=[('01','Create candidate','Origin, asset, source revision'),('02','Record validation','Method, evidence, limitations'),('03','Accept and patch','Reviewer decision + artifact identity'),('04','Verify and review','Required checks + separate actors'),('05','Record change and close','Rollout + revalidation + explicit reason')]
-for i,(n,t,b) in enumerate(steps):
-    y=317+i*91;s += [txt(80,y+8,70,50,n,32,MINT,True),txt(175,y+8,570,50,t,29,WHITE,True),txt(770,y+13,720,50,b,25,MUTED)]
-add(s,'Run node scripts/demo-lifecycle.mjs and node --test --test-isolation=none tests/lifecycle.test.mjs. The demo uses explicit simulated evidence. The tests exercise the actual state gates, including stale verification and changed patch approval. Do not describe this as a live scan, an executed exploit, or a production rollout.')
+s=base('Choose the right capability','Start with native capabilities, then add the customer integration that is actually missing.',8)
+rows=[('Defense Factory','Continuous operating model and reference architecture'),('Daybreak','Broader governed cyber-defense stack'),('Codex Security','Code discovery, finding evidence, validation and fixes'),('Promptfoo','AI application evaluation and adversarial behavior testing'),('OpenFix proposal','Customer context, evidence, ownership and change workflow')]
+for i,(a,b) in enumerate(rows):
+    y=324+i*88;s += [rect(75,y,1450,70),txt(100,y+16,360,42,a,27,MINT,True),txt(485,y+16,1000,42,b,24,WHITE)]
+add(s,'Defense Factory describes an operating model; Daybreak is broader than one product. Codex Security Cloud and local workflows have distinct setup and contracts. Promptfoo evaluates AI behavior, including agent tool use; it complements code-security analysis. OpenFix should add a useful customer integration rather than duplicate those products. Sources: https://openai.com/the-defense-factory/ ; https://openai.com/daybreak/ ; https://learn.chatgpt.com/docs/security/setup ; https://www.promptfoo.dev/docs/red-team/agents/ . OpenAI announced a Promptfoo acquisition agreement; do not infer a completed product integration or an interviewer biography from it.')
 
 s=base('Controls travel with the workflow','Assign authority to each action and bind approval to a specific artifact.',9)
 rows=[('Read / investigate','Approved source and data; scoped execution'),('Propose a patch','Accepted finding; bounded isolated workspace'),('Verify','Independent result at the exact changed revision'),('Publish / merge','Separate credentials; reviewer and branch protection'),('Deploy / close','Normal change process; post-change evidence')]
@@ -147,10 +194,10 @@ for i,(k,t,b,c) in enumerate([('Current v1','Remediation orchestrator','SARIF / 
     s += card(75+i*510,335,470,440,k,t,b,c)
 add(s,'Be candid about what is real. The original code is a useful remediation adapter. The new lifecycle domain and its tests are executable. The complete production integration and workbench are proposed, not delivered. Explain the migration in stages rather than implying that a diagram proves functionality.')
 
-s=base('Use Pro to learn the workflow','Choose customer deployment from requirements, access, and verified product capabilities.',12)
-for i,(k,t,b) in enumerate([('Explore locally','ChatGPT sign-in','Use included Codex access and the Security plugin. Verify account access and limits.'),('Integrate deliberately','Documented CLI / SDK','Preserve finding artifacts, execution failures, coverage gaps, and exact revision binding.'),('Deploy for customers','Explicit operating model','Choose identities, retention, residency, isolation, budgets, and review controls.')]):
+s=base('Separate access, usage, and deployment','Pro familiarization does not establish that every Security surface uses included allowance.',12)
+for i,(k,t,b) in enumerate([('Explore locally','ChatGPT sign-in','Learn the native finding, evidence and patch workflow. Confirm access and limits.'),('Cloud scans','Separate billing','Token billing applies to new Cloud scans. Eligible scanning credits may apply; check settings.'),('Customer rollout','Operating requirements','Choose identities, data handling, isolation, budgets, verification and review controls.')]):
     s += card(75+i*510,335,470,440,k,t,b)
-add(s,'A separate API key is not necessary to learn Codex with ChatGPT sign-in. ChatGPT subscription access and API billing are different paths. Do not assume Pro is a production service architecture or unlimited scan entitlement. The attempted local live Codex run was blocked by read-only runtime state; no live result is claimed.')
+add(s,'Local Codex supports ChatGPT sign-in. The current Cloud FAQ excludes newly configured Cloud scans from included plan allowance and describes separate token charges and possible credits. Confirm account-specific settings. Source: https://learn.chatgpt.com/docs/security/faq . No live Codex Security result is claimed by this repository.')
 
 s=base('Leave with a concrete recommendation','A good customer conversation ends with an owned next step and visible uncertainty.',13)
 s += [txt(80,340,1430,90,'One service. One issue class. One accountable reviewer.',44,MINT,True)]
@@ -159,15 +206,35 @@ for i,(t,b) in enumerate([('Agree the scope','Problem, assets, data, authority')
 add(s,'Summarize your assumptions and the customer decision you recommend. State the inputs you need, the owner, the expected evidence, the open limitations, and the next decision date. Invite correction. Adapt the proposed workflow to the customer rather than forcing every use case into a prebuilt pipeline.')
 
 s=base('Sources and practical boundaries','Public product documentation supports the workflow; the architecture and scenario are independent.',14)
-refs=[('Scan and evidence review','https://learn.chatgpt.com/docs/security/plugin/scans'),('Generate, verify, and close a fix','https://learn.chatgpt.com/docs/security/plugin/fix-findings'),('CLI and SDK contracts','https://learn.chatgpt.com/docs/security/cli/reference'),('Codex authentication','https://developers.openai.com/codex/auth'),('ChatGPT and API billing','https://help.openai.com/en/articles/9039756-managing-billing-for-chatgpt-and-the-api-platform')]
+refs=[('Defense Factory: process and architecture','https://openai.com/the-defense-factory/'),('Daybreak: broader capability stack','https://openai.com/daybreak/'),('Cloud setup and billing boundaries','https://learn.chatgpt.com/docs/security/faq'),('Finding and fix evidence','https://learn.chatgpt.com/docs/security/plugin/fix-findings'),('Promptfoo: adversarial agent evaluation','https://www.promptfoo.dev/docs/red-team/agents/')]
 for i,(title,url) in enumerate(refs):
     y=320+i*91;s += [txt(80,y,1400,36,title,25,MINT,True),txt(80,y+38,1420,33,url,19,MUTED)]
 add(s,'Use the linked public documentation as the current contract. This deck contains no confidential recruiter messages, customer data, inferred internal roadmaps, or reconstructed interview questions. It is a rehearsal and architecture aid, not a required presentation or evidence of a deployed service.')
 
+s=base('The repo\u2019s next three increments','Make one customer workflow operational before adding a broad product surface.',15)
+for i,(k,t,b) in enumerate([('01 / Integrate','Persistent security cases','Wire the case lifecycle into the actual CLI. Preserve evidence, revisions, owners and decisions.'),('02 / Prove','One real capability path','Use a documented Codex Security path. Verify one bounded change and handle failure honestly.'),('03 / Evaluate','Useful review and evidence','Add a workbench over real state. Evaluate agent behavior when needed; expand from measured proof.')]):
+    s += card(75+i*510,335,470,440,k,t,b)
+add(s,'The next implementation work is integrating the lifecycle into the actual runtime, not adding another disconnected example. First correct readiness semantics for pending/skipped checks, policy errors and corrupt state. Then wire one real capability path with recorded evidence. Keep Cursor behind an executor adapter. Cloud/runtime context and Promptfoo evaluation should be added when they serve the customer use case. The detailed plan and acceptance criteria are in docs/prep/repo-strategy.md; these increments are proposed, not complete.')
+
+s=base('Lead an adaptive working session','No presentation is required. Use a visual only when it helps the customer conversation.',16)
+steps=[('01','Frame the problem','Outcome, stakeholders, bottleneck, constraints'),('02','Map the workflow','Assets, tools, versions, evidence and handoffs'),('03','Choose and bound','Smallest useful AI step + identity / data boundaries'),('04','Define a pilot','Proof, baseline, owners, milestones and stop criteria'),('05','Adapt and recommend','Revise assumptions; explain the next decision')]
+for i,(n,t,b) in enumerate(steps):
+    y=317+i*91;s += [txt(80,y+8,70,50,n,32,MINT,True),txt(175,y+8,570,50,t,29,WHITE,True),txt(770,y+13,720,50,b,24,MUTED)]
+add(s,'The supplied exercise assesses discovery, cybersecurity judgment, architecture, execution planning, evidence, business impact, communication and adaptability. Practice these decisions without relying on a running app. Do not assume the scenario is the billing example. If the customer changes a data, identity, tool or rollout constraint, restate the assumption and revise the relevant design. The editable whiteboard and exercise workbook provide a flexible scaffold, not a scripted answer.')
+
+# The core canvases come first; implementation details and examples are references.
+slides = [slides[i] for i in [0,1,7,2,5,8,9,15,12,10,14,3,4,6,11,13]]
+for number,(scene,_) in enumerate(slides,1):
+    for item in scene:
+        if item['kind']=='text' and item.get('x')==1450 and item.get('y')==845:
+            item['text']=f'{number:02}'
+
 def render_svg(scene, dest):
-    out=['<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img">', '<title>OpenFix architecture proposal</title>', '<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#A2E5C5"/></marker></defs>']
+    out=['<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img">', '<title>OpenFix architecture proposal</title>', f'<defs><linearGradient id="synthwave-background" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#{BG}"/><stop offset="1" stop-color="#{BG_END}"/></linearGradient><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#{CYAN}"/></marker></defs>']
     for item in scene:
         if item['kind']=='rect':
+            if item['w']==1600 and item['h']==900:
+                out.extend(svg_background());continue
             stroke=f' stroke="#{item["stroke"]}"' if item.get('stroke') else ''
             out.append(f'<rect x="{item["x"]}" y="{item["y"]}" width="{item["w"]}" height="{item["h"]}" rx="12" fill="#{item["fill"]}"{stroke}/>')
         elif item['kind']=='line':
@@ -181,9 +248,11 @@ def render_svg(scene, dest):
     out.append('</svg>');dest.write_text('\n'.join(out))
 
 def render_png(scene, dest):
-    im=Image.new('RGB',(1600,900),'#'+BG);d=ImageDraw.Draw(im)
+    im=background_image();d=ImageDraw.Draw(im)
     for item in scene:
-        if item['kind']=='rect': d.rounded_rectangle((item['x'],item['y'],item['x']+item['w'],item['y']+item['h']),radius=12,fill='#'+item['fill'])
+        if item['kind']=='rect':
+            if item['w']==1600 and item['h']==900: continue
+            d.rounded_rectangle((item['x'],item['y'],item['x']+item['w'],item['y']+item['h']),radius=12,fill='#'+item['fill'],outline='#'+item['stroke'] if item.get('stroke') else None,width=1)
         elif item['kind']=='line':
             x,y,xx,yy=item['x1'],item['y1'],item['x2'],item['y2'];d.line((x,y,xx,yy),fill='#'+item['color'],width=3)
             if item['arrow']:
@@ -198,8 +267,12 @@ def ppt_scene(prs, scene, notes):
     slide.background.fill.solid();slide.background.fill.fore_color.rgb=RGBColor.from_string(BG)
     for item in scene:
         if item['kind']=='rect':
+            if item['w']==1600 and item['h']==900:
+                ppt_background(slide);continue
             shape=slide.shapes.add_shape(MSO_SHAPE.RECTANGLE if item['w']==1600 else MSO_SHAPE.ROUNDED_RECTANGLE, Inches(item['x']/100), Inches(item['y']/100), Inches(item['w']/100), Inches(item['h']/100))
             shape.fill.solid();shape.fill.fore_color.rgb=RGBColor.from_string(item['fill']);shape.line.fill.background()
+            if item.get('stroke'):
+                shape.line.color.rgb=RGBColor.from_string(item['stroke']);shape.line.width=Pt(.65)
             try: shape.adjustments[0]=.06
             except (IndexError,ValueError): pass
         elif item['kind']=='line':

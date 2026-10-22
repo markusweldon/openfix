@@ -1,5 +1,7 @@
 # Refactor OpenFix around the full security lifecycle
 
+Read the [prioritized repository strategy](repo-strategy.md) for the current recommendation, code-specific gaps, implementation increments, and acceptance criteria. This document provides the supporting architecture contracts. The [exercise workbook](exercise-workbook.md) is the starting point for preparation.
+
 ## Current implementation
 
 The current CLI normalizes SARIF/JSON, makes deterministic routing decisions from `policy.yaml`, invokes Cursor cloud remediation agents, and observes PR CI through `gh`. It has no complete model of candidate validation, accepted findings, patch identity, verification gaps, reviewer disposition, or explicit closure.
@@ -47,9 +49,9 @@ This is an application design, not a claim that every OpenAI surface uses one ri
 - **Execution:** one isolated job per task, minimal credentials, controlled egress, resource bounds, and cancellation.
 - **Review and publication:** a separate identity can publish a reviewed patch; branch protection and normal deployment controls retain authority.
 
-## Prototype in this branch
+## Existing standalone prototype
 
-`src/lifecycle/workflow.mjs` implements the state and decision gates while preserving prior states and decision events. Its tests cover missing evidence, unvalidated findings, false positives, stale patch verification, approval invalidation, and premature closure. `scripts/demo-lifecycle.mjs` exercises the full decision sequence with explicitly simulated evidence.
+`src/lifecycle/workflow.mjs` implements the state and decision gates while preserving prior states and decision events. Its tests cover missing evidence, unvalidated findings, false positives, stale patch verification, approval invalidation, and premature closure. `scripts/demo-lifecycle.mjs` exercises the full decision sequence with explicitly simulated evidence. This module is not wired into the running `openfix` / `dev` CLI.
 
 The prototype does not implement a production scan executor, a hosted multi-tenant service, live cloud/runtime connectors, or a GitHub publication service. A successful lifecycle demo is not a live Codex Security scan or security evaluation.
 

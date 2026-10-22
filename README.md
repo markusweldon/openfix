@@ -1,6 +1,8 @@
 # OpenFix
 
-The [preparation pack](docs/prep/README.md) now includes an editable deck, PDF, speaker notes, workflow and architecture diagrams, a pilot worksheet, and a [full lifecycle refactor proposal](docs/prep/refactor-plan.md).
+**Repository direction: customer context to verified security changes.** The [prioritized repo plan](docs/prep/repo-strategy.md) explains how to evolve the existing remediation adapter into a customer security workflow, using native capabilities and preserving evidence, ownership, and change authority.
+
+The [preparation pack](docs/prep/README.md) includes a discovery-led workbook, product map, editable whiteboard, purple-gradient visual reference deck, diagrams, and a pilot worksheet.
 
 ![Proposed OpenFix security lifecycle](docs/prep/diagrams/lifecycle.svg)
 
@@ -12,6 +14,8 @@ npm run demo:lifecycle
 ```
 
 ## Current v1 implementation
+
+The sections below document v1. Its scanner-only detection assumptions are legacy design choices; the [next repository plan](docs/prep/repo-strategy.md) supports native AI discovery with producer-specific evidence and independent verification.
 
 **Scanner findings in. Cursor agents remediate. PRs out for human review.**
 

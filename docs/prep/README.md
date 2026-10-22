@@ -1,18 +1,22 @@
 # OpenFix preparation pack
 
-**Purpose:** rehearse a customer conversation about moving from security signals to reviewed, verified changes. This is an independent architecture proposal and original practice scenario, not an OpenAI product or a reproduction of an interview exercise.
+**Purpose:** rehearse a discovery-led customer working session and make an evidence-backed plan for this repository. Start from the provided scenario and constraints. This is an independent reference design and original practice material, not an OpenAI product or a reproduction of an interview exercise.
 
 ## Start here
 
-- [Presentation PDF](openfix-customer-workflow.pdf) — easiest format to read or share.
-- [Editable PowerPoint](openfix-customer-workflow.pptx) — includes speaker notes.
+- [Exercise workbook](exercise-workbook.md) — discovery, architecture, pilot decisions, and adapting to constraints.
+- [Prioritized repository strategy](repo-strategy.md) — what to keep, refactor, retire, and implement next.
+- [Product and operating-model map](product-landscape.md) — Defense Factory, Daybreak, Codex Security surfaces, and Promptfoo.
+- [Editable Excalidraw whiteboard](customer-workflow.excalidraw) — a flexible five-part canvas.
+- [Visual reference PDF](openfix-customer-workflow.pdf) — purple/synthwave gradients, with core canvases first and details as references.
+- [Editable PowerPoint](openfix-customer-workflow.pptx) — includes speaker notes and editable gradients.
 - [Talk track](talk-track.md) — concise prompts and source links for each slide.
 - [Current v1 workflow](diagrams/current-v1.svg), [proposed full lifecycle](diagrams/lifecycle.svg), and [target architecture](diagrams/architecture.svg) — scalable diagrams with PNG and Mermaid counterparts.
 - [Customer discovery and pilot worksheet](pilot-worksheet.md).
-- [Refactor scope and implementation status](refactor-plan.md).
+- [Architecture contracts and implementation status](refactor-plan.md).
 - [Verification and limits](validation.md).
 
-The deck is a preparation aid. A customer working session starts with discovery; use only the parts that fit the customer's problem. It is not necessary to deliver the whole presentation.
+No presentation or advance implementation is required by the supplied exercise format. Use the deck as a visual library and rehearsal aid. The live discussion should follow the customer problem, assumptions, constraints, and permitted tools.
 
 ## What the assets claim
 
@@ -28,9 +32,10 @@ With Python and `python-pptx` installed:
 
 ```bash
 python scripts/build-prep-assets.py
+python scripts/build-whiteboard.py
 ```
 
-The script generates the PowerPoint, SVG/PNG diagrams, and talk track. If LibreOffice is available, export the PDF with:
+The scripts generate the PowerPoint, SVG/PNG diagrams, talk track, and editable Excalidraw canvas. If LibreOffice is available, export the PDF with:
 
 ```bash
 soffice --headless --convert-to pdf --outdir docs/prep docs/prep/openfix-customer-workflow.pptx
@@ -46,6 +51,9 @@ The PDF and PPTX are checked in so viewing them does not require these tools. Me
 - [Codex Security CLI reference](https://learn.chatgpt.com/docs/security/cli/reference)
 - [Codex Security TypeScript SDK](https://learn.chatgpt.com/docs/security/sdk)
 - [Codex authentication](https://developers.openai.com/codex/auth)
-- [ChatGPT and API billing](https://help.openai.com/en/articles/9039756-managing-billing-for-chatgpt-and-the-api-platform)
+- [Cloud-specific usage and billing](https://learn.chatgpt.com/docs/security/faq)
+- [Defense Factory](https://openai.com/the-defense-factory/)
+- [Daybreak](https://openai.com/daybreak/)
+- [Promptfoo agent evaluation](https://www.promptfoo.dev/docs/red-team/agents/)
 
 Product contracts can change. Check access, supported authentication, execution permissions, output schemas, and data handling in the current documentation before implementation.

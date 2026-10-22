@@ -1,44 +1,65 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img">
 <title>OpenFix architecture proposal</title>
-<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#A2E5C5"/></marker></defs>
-<rect x="0" y="0" width="1600" height="900" rx="12" fill="#101F2A"/>
-<rect x="70" y="62" width="42" height="7" rx="12" fill="#A2E5C5"/>
-<text x="130" y="64.0" fill="#A2E5C5" font-size="17" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">OPENFIX / ARCHITECTURE PROPOSAL + WORKFLOW PROTOTYPE</text>
-<text x="70" y="181.0" fill="#F4F3EB" font-size="56" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">A control plane with clear authority</text>
-<text x="74" y="251.0" fill="#B1C0C7" font-size="25" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Target architecture: integrate security capabilities without giving one process every permission.</text>
-<line x1="70" y1="829" x2="1530" y2="829" stroke="#395462" stroke-width="3"/>
-<text x="73" y="866.0" fill="#B1C0C7" font-size="16" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Independent project • Synthetic practice scenario • No production results claimed</text>
-<text x="1450" y="866.0" fill="#A2E5C5" font-size="21" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">06</text>
-<rect x="70" y="310" width="330" height="110" rx="12" fill="#19313D"/>
-<text x="90" y="353.0" fill="#F4F3EB" font-size="27" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Codex Security</text>
-<text x="90" y="389.0" fill="#B1C0C7" font-size="18" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Discovery + validation</text>
-<line x1="404" y1="365" x2="510" y2="500" stroke="#A2E5C5" stroke-width="3" marker-end="url(#arrow)"/>
-<rect x="70" y="455" width="330" height="110" rx="12" fill="#19313D"/>
-<text x="90" y="498.0" fill="#F4F3EB" font-size="27" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Scanner findings</text>
-<text x="90" y="534.0" fill="#B1C0C7" font-size="18" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">SARIF / JSON imports</text>
-<line x1="404" y1="510" x2="510" y2="500" stroke="#A2E5C5" stroke-width="3" marker-end="url(#arrow)"/>
-<rect x="70" y="600" width="330" height="110" rx="12" fill="#19313D"/>
-<text x="90" y="643.0" fill="#F4F3EB" font-size="27" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Cloud + runtime</text>
-<text x="90" y="679.0" fill="#B1C0C7" font-size="18" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Context with asset / version mapping</text>
-<line x1="404" y1="655" x2="510" y2="500" stroke="#A2E5C5" stroke-width="3" marker-end="url(#arrow)"/>
-<rect x="520" y="375" width="410" height="250" rx="12" fill="#19313D"/>
-<text x="545" y="441.0" fill="#F4F3EB" font-size="39" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">OpenFix</text>
-<text x="545" y="492.0" fill="#B1C0C7" font-size="27" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Lifecycle policy</text>
-<text x="545" y="526.02" fill="#B1C0C7" font-size="27" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Evidence + provenance</text>
-<text x="545" y="560.04" fill="#B1C0C7" font-size="27" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Review decisions + audit</text>
-<rect x="1035" y="310" width="485" height="120" rx="12" fill="#19313D"/>
-<text x="1060" y="359.0" fill="#F4F3EB" font-size="31" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Isolated executor</text>
-<text x="1060" y="401.0" fill="#B1C0C7" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Read source / propose bounded patch</text>
-<rect x="1035" y="490" width="485" height="120" rx="12" fill="#19313D"/>
-<text x="1060" y="539.0" fill="#F4F3EB" font-size="31" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Independent verification</text>
-<text x="1060" y="581.0" fill="#B1C0C7" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Exact artifact + explicit proof gaps</text>
-<line x1="935" y1="442" x2="1025" y2="370" stroke="#A2E5C5" stroke-width="3" marker-end="url(#arrow)"/>
-<line x1="1278" y1="434" x2="1278" y2="482" stroke="#A2E5C5" stroke-width="3" marker-end="url(#arrow)"/>
-<line x1="1028" y1="550" x2="935" y2="565" stroke="#A2E5C5" stroke-width="3" marker-end="url(#arrow)"/>
-<rect x="520" y="700" width="410" height="80" rx="12" fill="#19313D"/>
-<text x="545" y="750.0" fill="#A2E5C5" font-size="29" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Human review</text>
-<line x1="725" y1="631" x2="725" y2="690" stroke="#A2E5C5" stroke-width="3" marker-end="url(#arrow)"/>
-<rect x="1035" y="700" width="485" height="80" rx="12" fill="#19313D"/>
-<text x="1060" y="744.0" fill="#F4F3EB" font-size="26" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Separate publication identity</text>
-<line x1="935" y1="740" x2="1025" y2="740" stroke="#A2E5C5" stroke-width="3" marker-end="url(#arrow)"/>
+<defs><linearGradient id="synthwave-background" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#160A2C"/><stop offset="1" stop-color="#3A185F"/></linearGradient><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#82DDEA"/></marker></defs>
+<rect width="1600" height="900" fill="url(#synthwave-background)"/>
+<line x1="0" y1="785" x2="1600" y2="785" stroke="#764396" stroke-opacity=".19"/>
+<line x1="0" y1="812" x2="1600" y2="812" stroke="#764396" stroke-opacity=".19"/>
+<line x1="0" y1="850" x2="1600" y2="850" stroke="#764396" stroke-opacity=".19"/>
+<line x1="0" y1="899" x2="1600" y2="899" stroke="#764396" stroke-opacity=".19"/>
+<line x1="-160.0" y1="770" x2="-800" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="-40.0" y1="770" x2="-600" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="80.0" y1="770" x2="-400" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="200.0" y1="770" x2="-200" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="320.0" y1="770" x2="0" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="440.0" y1="770" x2="200" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="560.0" y1="770" x2="400" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="680.0" y1="770" x2="600" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="800.0" y1="770" x2="800" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="920.0" y1="770" x2="1000" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="1040.0" y1="770" x2="1200" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="1160.0" y1="770" x2="1400" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="1280.0" y1="770" x2="1600" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="1400.0" y1="770" x2="1800" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="1520.0" y1="770" x2="2000" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="1640.0" y1="770" x2="2200" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="1760.0" y1="770" x2="2400" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<rect x="70" y="62" width="42" height="7" rx="12" fill="#D7B0FF"/>
+<text x="130" y="64.0" fill="#D7B0FF" font-size="17" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">OPENFIX / CUSTOMER WORKFLOW / VISUAL REFERENCE</text>
+<text x="70" y="181.0" fill="#FAF6FF" font-size="56" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">A control plane with clear authority</text>
+<text x="74" y="251.0" fill="#D0C1DF" font-size="25" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Target architecture: integrate security capabilities without giving one process every permission.</text>
+<line x1="70" y1="829" x2="1530" y2="829" stroke="#694789" stroke-width="3"/>
+<text x="73" y="866.0" fill="#D0C1DF" font-size="16" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Independent project • Synthetic practice scenario • No production results claimed</text>
+<text x="1450" y="866.0" fill="#D7B0FF" font-size="21" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">06</text>
+<rect x="70" y="310" width="330" height="110" rx="12" fill="#27143F" stroke="#583474"/>
+<text x="90" y="353.0" fill="#FAF6FF" font-size="27" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Codex Security</text>
+<text x="90" y="389.0" fill="#D0C1DF" font-size="18" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Discovery + validation</text>
+<line x1="404" y1="365" x2="510" y2="500" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="70" y="455" width="330" height="110" rx="12" fill="#27143F" stroke="#583474"/>
+<text x="90" y="498.0" fill="#FAF6FF" font-size="27" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Scanner findings</text>
+<text x="90" y="534.0" fill="#D0C1DF" font-size="18" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">SARIF / JSON imports</text>
+<line x1="404" y1="510" x2="510" y2="500" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="70" y="600" width="330" height="110" rx="12" fill="#27143F" stroke="#583474"/>
+<text x="90" y="643.0" fill="#FAF6FF" font-size="27" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Cloud + runtime</text>
+<text x="90" y="679.0" fill="#D0C1DF" font-size="18" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Context with asset / version mapping</text>
+<line x1="404" y1="655" x2="510" y2="500" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="520" y="375" width="410" height="250" rx="12" fill="#27143F" stroke="#583474"/>
+<text x="545" y="441.0" fill="#FAF6FF" font-size="39" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">OpenFix</text>
+<text x="545" y="492.0" fill="#D0C1DF" font-size="27" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Lifecycle policy</text>
+<text x="545" y="526.02" fill="#D0C1DF" font-size="27" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Evidence + provenance</text>
+<text x="545" y="560.04" fill="#D0C1DF" font-size="27" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Review decisions + audit</text>
+<rect x="1035" y="310" width="485" height="120" rx="12" fill="#27143F" stroke="#583474"/>
+<text x="1060" y="359.0" fill="#FAF6FF" font-size="31" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Isolated executor</text>
+<text x="1060" y="401.0" fill="#D0C1DF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Read source / propose bounded patch</text>
+<rect x="1035" y="490" width="485" height="120" rx="12" fill="#27143F" stroke="#583474"/>
+<text x="1060" y="539.0" fill="#FAF6FF" font-size="31" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Independent verification</text>
+<text x="1060" y="581.0" fill="#D0C1DF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Exact artifact + explicit proof gaps</text>
+<line x1="935" y1="442" x2="1025" y2="370" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
+<line x1="1278" y1="434" x2="1278" y2="482" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
+<line x1="1028" y1="550" x2="935" y2="565" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="520" y="700" width="410" height="80" rx="12" fill="#27143F" stroke="#583474"/>
+<text x="545" y="750.0" fill="#D7B0FF" font-size="29" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Human review</text>
+<line x1="725" y1="631" x2="725" y2="690" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="1035" y="700" width="485" height="80" rx="12" fill="#27143F" stroke="#583474"/>
+<text x="1060" y="744.0" fill="#FAF6FF" font-size="26" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Separate publication identity</text>
+<line x1="935" y1="740" x2="1025" y2="740" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
 </svg>
