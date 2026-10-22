@@ -1,0 +1,6 @@
+flowchart LR
+  I[SARIF / JSON import] --> P[Deterministic routing policy]
+  P --> A[Cursor remediation agent]
+  A --> R[Remediation PR]
+  R --> C[Observe downstream PR CI]
+  C --> H[Human review and normal merge process]

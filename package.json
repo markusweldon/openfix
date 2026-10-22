@@ -10,7 +10,10 @@
     "build": "tsc",
     "dev": "tsx src/cli.ts",
     "openfix": "tsx src/cli.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:lifecycle": "node --test --experimental-test-isolation=none tests/lifecycle.test.mjs",
+    "demo:lifecycle": "node scripts/demo-lifecycle.mjs",
+    "assets:prep": "python scripts/build-prep-assets.py"
   },
   "engines": {
     "node": ">=22.13.0"
@@ -29,3 +32,4 @@
     "typescript": "^7.0.2"
   }
 }
+

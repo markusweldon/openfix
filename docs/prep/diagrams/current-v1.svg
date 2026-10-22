@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img">
+<title>OpenFix architecture proposal</title>
+<defs><linearGradient id="synthwave-background" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#160A2C"/><stop offset="1" stop-color="#3A185F"/></linearGradient><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#82DDEA"/></marker></defs>
+<rect width="1600" height="900" fill="url(#synthwave-background)"/>
+<line x1="0" y1="785" x2="1600" y2="785" stroke="#764396" stroke-opacity=".19"/>
+<line x1="0" y1="812" x2="1600" y2="812" stroke="#764396" stroke-opacity=".19"/>
+<line x1="0" y1="850" x2="1600" y2="850" stroke="#764396" stroke-opacity=".19"/>
+<line x1="0" y1="899" x2="1600" y2="899" stroke="#764396" stroke-opacity=".19"/>
+<line x1="-160.0" y1="770" x2="-800" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="-40.0" y1="770" x2="-600" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="80.0" y1="770" x2="-400" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="200.0" y1="770" x2="-200" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="320.0" y1="770" x2="0" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="440.0" y1="770" x2="200" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="560.0" y1="770" x2="400" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="680.0" y1="770" x2="600" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="800.0" y1="770" x2="800" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="920.0" y1="770" x2="1000" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="1040.0" y1="770" x2="1200" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="1160.0" y1="770" x2="1400" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="1280.0" y1="770" x2="1600" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="1400.0" y1="770" x2="1800" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="1520.0" y1="770" x2="2000" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="1640.0" y1="770" x2="2200" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<line x1="1760.0" y1="770" x2="2400" y2="900" stroke="#764396" stroke-opacity=".19"/>
+<rect x="70" y="62" width="42" height="7" rx="12" fill="#D7B0FF"/>
+<text x="130" y="64.0" fill="#D7B0FF" font-size="17" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">OPENFIX / CURRENT IMPLEMENTATION</text>
+<text x="70" y="181.0" fill="#FAF6FF" font-size="56" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Current OpenFix v1</text>
+<text x="74" y="251.0" fill="#D0C1DF" font-size="25" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Implemented path: imported scanner findings to Cursor remediation and downstream PR checks.</text>
+<line x1="70" y1="829" x2="1530" y2="829" stroke="#694789" stroke-width="3"/>
+<text x="73" y="866.0" fill="#D0C1DF" font-size="16" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Independent project • Synthetic practice scenario • No production results claimed</text>
+<text x="1450" y="866.0" fill="#D7B0FF" font-size="21" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">01</text>
+<rect x="65" y="350" width="270" height="195" rx="12" fill="#27143F" stroke="#583474"/>
+<text x="85" y="387.0" fill="#D7B0FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">01</text>
+<text x="85" y="432.0" fill="#FAF6FF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Import findings</text>
+<text x="85" y="478.0" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">SARIF / JSON</text>
+<line x1="340" y1="447" x2="365" y2="447" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="375" y="350" width="270" height="195" rx="12" fill="#27143F" stroke="#583474"/>
+<text x="395" y="387.0" fill="#D7B0FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">02</text>
+<text x="395" y="432.0" fill="#FAF6FF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Route by policy</text>
+<text x="395" y="478.0" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Fix / human / noise</text>
+<line x1="650" y1="447" x2="675" y2="447" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="685" y="350" width="270" height="195" rx="12" fill="#27143F" stroke="#583474"/>
+<text x="705" y="387.0" fill="#D7B0FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">03</text>
+<text x="705" y="432.0" fill="#FAF6FF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Cursor agent</text>
+<text x="705" y="478.0" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Generate remediation</text>
+<text x="705" y="503.2" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">PR</text>
+<line x1="960" y1="447" x2="985" y2="447" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="995" y="350" width="270" height="195" rx="12" fill="#27143F" stroke="#583474"/>
+<text x="1015" y="387.0" fill="#D7B0FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">04</text>
+<text x="1015" y="432.0" fill="#FAF6FF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Observe PR CI</text>
+<text x="1015" y="478.0" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Tests + scanner jobs</text>
+<line x1="1270" y1="447" x2="1295" y2="447" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="1305" y="350" width="270" height="195" rx="12" fill="#27143F" stroke="#583474"/>
+<text x="1325" y="387.0" fill="#D7B0FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">05</text>
+<text x="1325" y="432.0" fill="#FAF6FF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Human review</text>
+<text x="1325" y="478.0" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Normal merge process</text>
+<rect x="75" y="620" width="1450" height="140" rx="12" fill="#27143F" stroke="#583474"/>
+<text x="100" y="672.0" fill="#D7B0FF" font-size="29" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">The refactor adds explicit evidence and decision state across the lifecycle.</text>
+<text x="100" y="727.0" fill="#D0C1DF" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Discovery / validation / acceptance / exact-patch verification / review / revalidation / closure</text>
+</svg>
