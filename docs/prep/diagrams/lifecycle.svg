@@ -1,81 +1,81 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img">
 <title>OpenFix architecture proposal</title>
-<defs><linearGradient id="synthwave-background" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#160A2C"/><stop offset="1" stop-color="#3A185F"/></linearGradient><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#82DDEA"/></marker></defs>
+<defs><linearGradient id="synthwave-background" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#10071C"/><stop offset="1" stop-color="#28103F"/></linearGradient><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#9DEEFF"/></marker></defs>
 <rect width="1600" height="900" fill="url(#synthwave-background)"/>
-<line x1="0" y1="785" x2="1600" y2="785" stroke="#764396" stroke-opacity=".19"/>
-<line x1="0" y1="812" x2="1600" y2="812" stroke="#764396" stroke-opacity=".19"/>
-<line x1="0" y1="850" x2="1600" y2="850" stroke="#764396" stroke-opacity=".19"/>
-<line x1="0" y1="899" x2="1600" y2="899" stroke="#764396" stroke-opacity=".19"/>
-<line x1="-160.0" y1="770" x2="-800" y2="900" stroke="#764396" stroke-opacity=".19"/>
-<line x1="-40.0" y1="770" x2="-600" y2="900" stroke="#764396" stroke-opacity=".19"/>
-<line x1="80.0" y1="770" x2="-400" y2="900" stroke="#764396" stroke-opacity=".19"/>
-<line x1="200.0" y1="770" x2="-200" y2="900" stroke="#764396" stroke-opacity=".19"/>
-<line x1="320.0" y1="770" x2="0" y2="900" stroke="#764396" stroke-opacity=".19"/>
-<line x1="440.0" y1="770" x2="200" y2="900" stroke="#764396" stroke-opacity=".19"/>
-<line x1="560.0" y1="770" x2="400" y2="900" stroke="#764396" stroke-opacity=".19"/>
-<line x1="680.0" y1="770" x2="600" y2="900" stroke="#764396" stroke-opacity=".19"/>
-<line x1="800.0" y1="770" x2="800" y2="900" stroke="#764396" stroke-opacity=".19"/>
-<line x1="920.0" y1="770" x2="1000" y2="900" stroke="#764396" stroke-opacity=".19"/>
-<line x1="1040.0" y1="770" x2="1200" y2="900" stroke="#764396" stroke-opacity=".19"/>
-<line x1="1160.0" y1="770" x2="1400" y2="900" stroke="#764396" stroke-opacity=".19"/>
-<line x1="1280.0" y1="770" x2="1600" y2="900" stroke="#764396" stroke-opacity=".19"/>
-<line x1="1400.0" y1="770" x2="1800" y2="900" stroke="#764396" stroke-opacity=".19"/>
-<line x1="1520.0" y1="770" x2="2000" y2="900" stroke="#764396" stroke-opacity=".19"/>
-<line x1="1640.0" y1="770" x2="2200" y2="900" stroke="#764396" stroke-opacity=".19"/>
-<line x1="1760.0" y1="770" x2="2400" y2="900" stroke="#764396" stroke-opacity=".19"/>
-<rect x="70" y="62" width="42" height="7" rx="12" fill="#D7B0FF"/>
-<text x="130" y="64.0" fill="#D7B0FF" font-size="17" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">OPENFIX / CUSTOMER WORKFLOW / VISUAL REFERENCE</text>
-<text x="70" y="181.0" fill="#FAF6FF" font-size="56" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">The complete security loop</text>
-<text x="74" y="251.0" fill="#D0C1DF" font-size="25" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Evidence, acceptance, verification, and closure are separate decisions.</text>
-<line x1="70" y1="829" x2="1530" y2="829" stroke="#694789" stroke-width="3"/>
-<text x="73" y="866.0" fill="#D0C1DF" font-size="16" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Independent project • Synthetic practice scenario • No production results claimed</text>
-<text x="1450" y="866.0" fill="#D7B0FF" font-size="21" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">03</text>
-<rect x="75" y="320" width="295" height="175" rx="12" fill="#27143F" stroke="#583474"/>
-<text x="95" y="357.0" fill="#D7B0FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">01</text>
-<text x="95" y="402.0" fill="#FAF6FF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Inventory + scope</text>
-<text x="95" y="448.0" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Assets, owners,</text>
-<text x="95" y="473.2" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">boundaries</text>
-<rect x="460" y="320" width="295" height="175" rx="12" fill="#27143F" stroke="#583474"/>
-<text x="480" y="357.0" fill="#D7B0FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">02</text>
-<text x="480" y="402.0" fill="#FAF6FF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Discover / import</text>
-<text x="480" y="448.0" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Codex Security +</text>
-<text x="480" y="473.2" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">scanners</text>
-<rect x="845" y="320" width="295" height="175" rx="12" fill="#27143F" stroke="#583474"/>
-<text x="865" y="357.0" fill="#D7B0FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">03</text>
-<text x="865" y="402.0" fill="#FAF6FF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Validate</text>
-<text x="865" y="448.0" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Confirmed / disproved /</text>
-<text x="865" y="473.2" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">gaps</text>
-<rect x="1230" y="320" width="295" height="175" rx="12" fill="#27143F" stroke="#583474"/>
-<text x="1250" y="357.0" fill="#D7B0FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">04</text>
-<text x="1250" y="402.0" fill="#FAF6FF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Triage + accept</text>
-<text x="1250" y="448.0" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Owner, priority,</text>
-<text x="1250" y="473.2" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">decision</text>
-<line x1="373" y1="407" x2="452" y2="407" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
-<line x1="758" y1="407" x2="837" y2="407" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
-<line x1="1143" y1="407" x2="1222" y2="407" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
-<rect x="75" y="580" width="295" height="175" rx="12" fill="#27143F" stroke="#583474"/>
-<text x="95" y="617.0" fill="#D7B0FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">08</text>
-<text x="95" y="662.0" fill="#FAF6FF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Revalidate + close</text>
-<text x="95" y="708.0" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">After normal change</text>
-<text x="95" y="733.2" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">controls</text>
-<rect x="460" y="580" width="295" height="175" rx="12" fill="#27143F" stroke="#583474"/>
-<text x="480" y="617.0" fill="#D7B0FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">07</text>
-<text x="480" y="662.0" fill="#FAF6FF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Human review</text>
-<text x="480" y="708.0" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Approve the exact</text>
-<text x="480" y="733.2" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">artifact</text>
-<rect x="845" y="580" width="295" height="175" rx="12" fill="#27143F" stroke="#583474"/>
-<text x="865" y="617.0" fill="#D7B0FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">06</text>
-<text x="865" y="662.0" fill="#FAF6FF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Verify patch</text>
-<text x="865" y="708.0" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Security + legitimate</text>
-<text x="865" y="733.2" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">behavior</text>
-<rect x="1230" y="580" width="295" height="175" rx="12" fill="#27143F" stroke="#583474"/>
-<text x="1250" y="617.0" fill="#D7B0FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">05</text>
-<text x="1250" y="662.0" fill="#FAF6FF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Generate patch</text>
-<text x="1250" y="708.0" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Bounded, isolated</text>
-<text x="1250" y="733.2" fill="#D0C1DF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">change</text>
-<line x1="1377" y1="496" x2="1377" y2="573" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
-<line x1="452" y1="667" x2="377" y2="667" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
-<line x1="837" y1="667" x2="762" y2="667" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
-<line x1="1222" y1="667" x2="1147" y2="667" stroke="#82DDEA" stroke-width="3" marker-end="url(#arrow)"/>
-<text x="75" y="531.0" fill="#FF96D0" font-size="21" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Early triage can guide investigation. Failed or incomplete verification returns work to remediation.</text>
+<line x1="0" y1="785" x2="1600" y2="785" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="0" y1="812" x2="1600" y2="812" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="0" y1="850" x2="1600" y2="850" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="0" y1="899" x2="1600" y2="899" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="-160.0" y1="770" x2="-800" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="-40.0" y1="770" x2="-600" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="80.0" y1="770" x2="-400" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="200.0" y1="770" x2="-200" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="320.0" y1="770" x2="0" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="440.0" y1="770" x2="200" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="560.0" y1="770" x2="400" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="680.0" y1="770" x2="600" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="800.0" y1="770" x2="800" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="920.0" y1="770" x2="1000" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="1040.0" y1="770" x2="1200" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="1160.0" y1="770" x2="1400" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="1280.0" y1="770" x2="1600" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="1400.0" y1="770" x2="1800" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="1520.0" y1="770" x2="2000" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="1640.0" y1="770" x2="2200" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
+<line x1="1760.0" y1="770" x2="2400" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
+<rect x="70" y="62" width="42" height="7" rx="12" fill="#E4C7FF"/>
+<text x="130" y="67.0" fill="#E4C7FF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">OPENFIX / CUSTOMER WORKFLOW / VISUAL REFERENCE</text>
+<text x="70" y="181.0" fill="#FFFFFF" font-size="56" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">The complete security loop</text>
+<text x="74" y="256.0" fill="#F0E9FC" font-size="30" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Evidence, acceptance, verification, and closure are separate decisions.</text>
+<line x1="70" y1="829" x2="1530" y2="829" stroke="#9C7ABF" stroke-width="3"/>
+<text x="73" y="867.0" fill="#C4B1DB" font-size="17" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Independent project • Customer exercise reference</text>
+<text x="1450" y="866.0" fill="#E4C7FF" font-size="21" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">03</text>
+<rect x="75" y="320" width="295" height="175" rx="12" fill="#160C25" stroke="#9C7ABF"/>
+<text x="95" y="357.0" fill="#E4C7FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">01</text>
+<text x="95" y="402.0" fill="#FFFFFF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Inventory + scope</text>
+<text x="95" y="451.0" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Assets, owners,</text>
+<text x="95" y="479.98" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">boundaries</text>
+<rect x="460" y="320" width="295" height="175" rx="12" fill="#160C25" stroke="#9C7ABF"/>
+<text x="480" y="357.0" fill="#E4C7FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">02</text>
+<text x="480" y="402.0" fill="#FFFFFF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Discover / import</text>
+<text x="480" y="451.0" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Codex Security +</text>
+<text x="480" y="479.98" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">scanners</text>
+<rect x="845" y="320" width="295" height="175" rx="12" fill="#160C25" stroke="#9C7ABF"/>
+<text x="865" y="357.0" fill="#E4C7FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">03</text>
+<text x="865" y="402.0" fill="#FFFFFF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Validate</text>
+<text x="865" y="451.0" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Confirmed / disproved</text>
+<text x="865" y="479.98" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">/ gaps</text>
+<rect x="1230" y="320" width="295" height="175" rx="12" fill="#160C25" stroke="#9C7ABF"/>
+<text x="1250" y="357.0" fill="#E4C7FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">04</text>
+<text x="1250" y="402.0" fill="#FFFFFF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Triage + accept</text>
+<text x="1250" y="451.0" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Owner, priority,</text>
+<text x="1250" y="479.98" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">decision</text>
+<line x1="373" y1="407" x2="452" y2="407" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
+<line x1="758" y1="407" x2="837" y2="407" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
+<line x1="1143" y1="407" x2="1222" y2="407" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="75" y="580" width="295" height="175" rx="12" fill="#160C25" stroke="#9C7ABF"/>
+<text x="95" y="617.0" fill="#E4C7FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">08</text>
+<text x="95" y="662.0" fill="#FFFFFF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Revalidate + close</text>
+<text x="95" y="711.0" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">After normal change</text>
+<text x="95" y="739.98" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">controls</text>
+<rect x="460" y="580" width="295" height="175" rx="12" fill="#160C25" stroke="#9C7ABF"/>
+<text x="480" y="617.0" fill="#E4C7FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">07</text>
+<text x="480" y="662.0" fill="#FFFFFF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Human review</text>
+<text x="480" y="711.0" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Approve the exact</text>
+<text x="480" y="739.98" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">artifact</text>
+<rect x="845" y="580" width="295" height="175" rx="12" fill="#160C25" stroke="#9C7ABF"/>
+<text x="865" y="617.0" fill="#E4C7FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">06</text>
+<text x="865" y="662.0" fill="#FFFFFF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Verify patch</text>
+<text x="865" y="711.0" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Security + legitimate</text>
+<text x="865" y="739.98" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">behavior</text>
+<rect x="1230" y="580" width="295" height="175" rx="12" fill="#160C25" stroke="#9C7ABF"/>
+<text x="1250" y="617.0" fill="#E4C7FF" font-size="22" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">05</text>
+<text x="1250" y="662.0" fill="#FFFFFF" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Generate patch</text>
+<text x="1250" y="711.0" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Bounded, isolated</text>
+<text x="1250" y="739.98" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">change</text>
+<line x1="1377" y1="496" x2="1377" y2="573" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
+<line x1="452" y1="667" x2="377" y2="667" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
+<line x1="837" y1="667" x2="762" y2="667" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
+<line x1="1222" y1="667" x2="1147" y2="667" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
+<text x="75" y="534.0" fill="#FFACDD" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Early triage guides investigation. Failed or incomplete verification returns work to remediation.</text>
 </svg>

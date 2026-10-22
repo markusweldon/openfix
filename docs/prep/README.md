@@ -22,20 +22,20 @@ No presentation or advance implementation is required by the supplied exercise f
 
 The existing OpenFix application is a Cursor-based scanner-to-remediation orchestrator. Its source code remains the record of implemented behavior. The proposed lifecycle expands discovery, evidence, validation, triage, remediation, verification, review, and closure. The diagrams explicitly label that target architecture.
 
-The runnable lifecycle model under `src/lifecycle/` is a prototype of decision gates, not a completed integration with every product in the diagrams. Live Codex Security access, isolated execution, publication, and production controls require separate integration and verification. Demo or simulated evidence must remain labeled.
+The runnable lifecycle model under `src/lifecycle/` is a standalone prototype of decision gates, not a completed integration with every product in the diagrams. It is not wired into the running CLI. The new workflow's live Codex Security integration, isolated execution controls, trusted publication and production controls require implementation and verification. The v1 Cursor path already creates PRs; that does not supply the proposed artifact-bound review and publication service. Demo or simulated evidence must remain labeled.
 
 No customer results, reduction percentages, cost savings, or production deployments are asserted in this pack.
 
 ## Rebuild the assets
 
-With Python and `python-pptx` installed:
+From the repository root, with Python, `python-pptx` and Pillow installed:
 
 ```bash
 python scripts/build-prep-assets.py
 python scripts/build-whiteboard.py
 ```
 
-The scripts generate the PowerPoint, SVG/PNG diagrams, talk track, and editable Excalidraw canvas. If LibreOffice is available, export the PDF with:
+The scripts generate the PowerPoint, SVG/PNG diagrams, talk track, and editable Excalidraw canvas. The whiteboard generator uses only the Python standard library. If LibreOffice is available, export the PDF with:
 
 ```bash
 soffice --headless --convert-to pdf --outdir docs/prep docs/prep/openfix-customer-workflow.pptx

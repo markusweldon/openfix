@@ -21,7 +21,7 @@ Use the [exercise workbook](exercise-workbook.md) for rehearsal and the [product
 | Lifecycle tests and demo | 16 software tests and a labeled simulation | No live scan, authenticated review, or deployment |
 | Preparation pack | Deck, diagrams, workbook, research and plan | These describe current and proposed states explicitly |
 
-The preparation materials were already pushed to a branch. Merging them into `main` puts them on the default branch; it does not connect the new lifecycle to the running CLI or complete a product refactor.
+The preparation materials and standalone lifecycle prototype are now on `main`. That makes them available on the default branch; it does not connect the lifecycle to the running CLI or complete a product refactor.
 
 ## The target customer workflow
 
@@ -54,12 +54,13 @@ OpenAI's Defense Factory describes a closely related continuous loop: inventory,
 
 ## First address existing assurance gaps
 
-These are observed code behaviors to fix during implementation, not claims that this branch has fixed them:
+These observed code behaviors remain implementation work; the documentation and standalone prototype do not fix them:
 
 - `src/verify.ts:281–283` returns zero for skipped and pending verification. Introduce explicit passed, failed and incomplete outcomes, with a non-success readiness result for missing required proof.
 - `src/remediator/prompt.ts:19,37–43` requires detection to originate from an external deterministic scanner. Replace that with producer-specific provenance and verification appropriate to the finding.
 - `src/policy/engine.ts` falls back to defaults after invalid configuration and ranks eligible work mainly by severity. Surface configuration errors and make prioritization explainable from customer context.
 - `src/state/store.ts` turns unreadable or corrupt state into a new empty state and deduplicates started/finished fingerprints without full revision/recurrence context. Preserve evidence, distinguish first-run absence from corruption, and use atomic versioned persistence.
+- `src/cli.ts` selects one capped batch for `--all-auto`; it does not continue through the rest of the queue. Make the option's behavior explicit before using it as a queue-draining service.
 - The new lifecycle module checks role labels supplied by its caller. Operational authorization needs authenticated actors and trusted evidence ingestion; these local assertions are not enterprise RBAC.
 
 ## Implementation increments and acceptance criteria

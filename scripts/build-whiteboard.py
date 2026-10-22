@@ -9,8 +9,8 @@ import textwrap
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / 'docs/prep/customer-workflow.excalidraw'
 ELEMENTS = []
-BG, PANEL, NOTE = '#130b22', '#211432', '#302044'
-STROKE, LAVENDER, CYAN, WHITE, MUTED = '#70539b', '#d1b3ff', '#81e7f0', '#f7f1ff', '#c5bad6'
+BG, PANEL, NOTE = '#10071c', '#160c25', '#231237'
+STROKE, LAVENDER, CYAN, WHITE, MUTED = '#9c7abf', '#e4c7ff', '#9deeff', '#ffffff', '#f0e9fc'
 
 
 def identity(name):
@@ -22,7 +22,7 @@ def base(name, kind, x, y, width, height, group=None):
         'id': identity(name), 'type': kind, 'x': x, 'y': y,
         'width': width, 'height': height, 'angle': 0,
         'strokeColor': STROKE, 'backgroundColor': 'transparent',
-        'fillStyle': 'solid', 'strokeWidth': 1, 'strokeStyle': 'solid',
+        'fillStyle': 'solid', 'strokeWidth': 2, 'strokeStyle': 'solid',
         'roughness': 0, 'opacity': 100, 'groupIds': [identity(group)] if group else [],
         'frameId': None, 'roundness': None, 'seed': int(identity(name)[:7], 16),
         'version': 1, 'versionNonce': int(identity(name)[7:14], 16),
@@ -57,7 +57,7 @@ def text(name, value, x, y, width, size=22, color=WHITE, container=None, group=N
 def prompt(name, value, x, y, width, height, group):
     box = rectangle(name + '-box', x, y, width, height, NOTE, group)
     item = text(name + '-text', value, x + 20, y + 18, width - 40,
-                size=21, color=WHITE, container=box, group=group)
+                size=24, color=WHITE, container=box, group=group)
     assert item['height'] <= height - 36, (name, 'prompt exceeds its container')
 
 
@@ -65,8 +65,8 @@ def area(number, title, subtitle, x, y, width, height):
     group = 'area-' + number
     rectangle(group + '-panel', x, y, width, height, PANEL, group)
     text(group + '-number', number, x + 28, y + 24, 90, 25, CYAN, group=group)
-    text(group + '-title', title, x + 28, y + 70, width - 56, 31, LAVENDER, group=group)
-    text(group + '-subtitle', subtitle, x + 28, y + 124, width - 56, 20, MUTED, group=group)
+    text(group + '-title', title, x + 28, y + 70, width - 56, 34, LAVENDER, group=group)
+    text(group + '-subtitle', subtitle, x + 28, y + 124, width - 56, 22, MUTED, group=group)
     return group
 
 
@@ -94,7 +94,7 @@ areas = [
 for number, title, subtitle, x, prompts in areas:
     group = area(number, title, subtitle, x, 220, 720, 650)
     for index, value in enumerate(prompts):
-        prompt(f'{group}-prompt-{index}', value, x + 28, 408 + index * 140, 664, 118, group)
+        prompt(f'{group}-prompt-{index}', value, x + 28, 408 + index * 148, 664, 138, group)
 
 group = area('04', 'Boundaries and failure behavior', 'Draw both the data flow and the authority boundary.', 80, 950, 1110, 610)
 for index, value in enumerate([

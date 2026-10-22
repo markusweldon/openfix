@@ -12,7 +12,7 @@ That implementation remains useful as a remediation adapter. The previous framin
 
 ```mermaid
 flowchart LR
-    S[Scope and threat model] --> D[Discover or import candidates]
+    S[Inventory, scope and threat model] --> D[Discover or import candidates]
     D --> V[Validate evidence]
     V --> T[Triage and accept]
     T --> P[Generate bounded patch]
@@ -53,7 +53,7 @@ This is an application design, not a claim that every OpenAI surface uses one ri
 
 `src/lifecycle/workflow.mjs` implements the state and decision gates while preserving prior states and decision events. Its tests cover missing evidence, unvalidated findings, false positives, stale patch verification, approval invalidation, and premature closure. `scripts/demo-lifecycle.mjs` exercises the full decision sequence with explicitly simulated evidence. This module is not wired into the running `openfix` / `dev` CLI.
 
-The prototype does not implement a production scan executor, a hosted multi-tenant service, live cloud/runtime connectors, or a GitHub publication service. A successful lifecycle demo is not a live Codex Security scan or security evaluation.
+The prototype does not implement a production scan executor, a hosted multi-tenant service, live cloud/runtime connectors, or artifact-bound GitHub publication. The separate v1 Cursor adapter can create PRs, but it does not implement the proposed lifecycle publication contract. A successful lifecycle demo is not a live Codex Security scan or security evaluation.
 
 ## Implementation sequence
 

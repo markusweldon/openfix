@@ -1,154 +1,128 @@
-# OpenFix — Field Eng demo cheat sheet
+# OpenFix walkthroughs
 
-Aligned to the Cursor Field Engineering SDK exercise: live prototype, architecture, trade-offs, limitations/evolve, **extend live**.
+There are two runnable paths: a standalone lifecycle simulation and the existing Cursor remediation CLI. They exercise different code and do not form an integrated application yet. For the live customer exercise, begin with the [discovery workbook](docs/prep/exercise-workbook.md); no presentation or prepared demo is required.
 
-## 1. Problem (Example B) — open with this (~1 min)
+Use the [repository plan](docs/prep/repo-strategy.md) to discuss the next increment and the [verification record](docs/prep/validation.md) for the checks actually performed. The examples below are instructions, not claims that a live scan or remediation was run.
 
-Enterprise scanners (Semgrep, Snyk, GHAS, …) dump noisy SARIF. Engineers ignore it; SLAs burn.
+## A. Lifecycle simulation: inspect the proposed decision gates
 
-**OpenFix:** scanner findings in → deterministic policy → Cursor **cloud** agents open fix PRs → humans authorize.
-
-Agents do **not** scan or self-attest. Detect ≠ remediate ≠ authorize.
-
-## 2. Live command script (~15–18 min)
+From the repository root, with Node.js 22.13 or later:
 
 ```bash
-cd ~/dev/openfix
-
-# Optional: wipe local remediations so auto_fix queue is full again
-# rm -rf .openfix
-
-npx tsx src/cli.ts ingest fixtures/findings/demo.sarif
-# Prints openfixRunId + repoUrl (+ commitSha if OPENFIX_COMMIT_SHA / GITHUB_SHA set)
-# Multi-artifact (merge + fingerprint dedupe): 
-# npx tsx src/cli.ts ingest fixtures/findings/demo.sarif fixtures/findings/extra.json
-# Optional MCP-style door (stub): npx tsx src/cli.ts ingest --from simulated:semgrep
-npx tsx src/cli.ts triage
-# Expect: OpenFix run line, then auto_fix / human_only / suppress_noise
-
-npx tsx src/cli.ts remediate
-# Finding-lane board: SEV | FINDING | LOCATION | STATUS (spinner while running)
-
-# Concurrent lanes
-npx tsx src/cli.ts remediate --agents 2
-# or: npx tsx src/cli.ts remediate -n 2
-# After: ── Fleet ── lists each bc-… — resume that id (not only --last)
-# Full agent stream: npx tsx src/cli.ts remediate -n 2 --verbose
-
-npx tsx src/cli.ts status --last
-npx tsx src/cli.ts resume --last --prompt "Address review feedback: strengthen the regression test and note CI must re-run the scanner before merge."
-npx tsx src/cli.ts verify --last
-# Compact App CI poll (Unit tests + Scanner re-run). Full gates: verify --checklist
+npm install
+npm run test:lifecycle
+npm run demo:lifecycle
 ```
 
-Then browser: open the **PR** → Files (provenance + scanner re-run language) → **Checks**.
+The demo prints an explicit simulation banner and moves a hypothetical cross-tenant invoice finding through candidate, validation, acceptance, patch, verification, review, rollout, revalidation and closure states. Actors, revisions, patch hash, evidence, checks and rollout are fabricated. No model, scan, merge or deployment runs.
 
-**Draft PRs are expected:** Cursor cloud `autoCreatePR` opens **draft** PRs by default — leave them draft until a human is ready to review.
+To save the simulated record to a new local file:
 
-**Verify / CI:** OpenFix does not re-scan. App repo workflow **CI** runs on the remediation PR (`pull_request`) with **2 lean jobs:** Unit tests + Scanner re-run stub. `verify --last` polls check-runs (compact); `verify --checklist` prints the full pre-merge gate list.
+```bash
+npm run demo:lifecycle -- --out /tmp/openfix-simulated-case.json
+```
 
-**Async / multi-step:** Multi-step lane = ingest → triage → remediate → verify. Async = durable cloud `bc-` id; status/resume anytime.
+The command refuses to overwrite an existing file. The record is useful for inspecting evidence fields and decision events; it is not evidence that the hypothetical vulnerability exists or was fixed.
 
-**Messy paste OK:** `status agent=bc-…` or `status bc-… run=run-…` — we parse the `bc-` token.
+Explain the modeled boundaries:
 
-## 2b. Hosting & Actions — talk track (~45 sec if asked)
+- A candidate needs validation evidence before acceptance and remediation.
+- Verification and review refer to an exact patch identity. A changed patch invalidates prior verification and approval.
+- Failed or incomplete required checks prevent modeled readiness. Closure follows recorded rollout and revalidation.
+- Actor IDs and role labels are supplied by the caller. The model does not authenticate users, execute verification, persist operational cases or enforce production access control.
 
-**Objection:** “If it’s a GitHub Action, isn’t this just a script?”
+The [tests](tests/lifecycle.test.mjs) exercise negative cases such as missing evidence, unvalidated findings, disproved candidates, stale verification and premature closure. A passing test suite establishes these software behaviors, not model accuracy or production assurance.
 
-**Answer:** Actions is the **hook**, not the product — same pattern as Dependabot / CodeQL. The runner only invokes OpenFix; **work** is Cursor cloud agents (`bc-…`), durable and resumable. Policy + run context + draft PRs + App CI are the control plane.
+## B. Current v1 CLI: imported finding to Cursor fix PR
 
-**What you host / own**
+This path uses the existing scanner-oriented application. Ingest and triage are local; remediation and resume use Cursor cloud and may create or update remote PRs. Live use requires a Cursor API credential and repository access. ChatGPT Pro does not authenticate this executor; see the [product map](docs/prep/product-landscape.md) for separate OpenAI surface and billing guidance.
 
-| Piece | Where it lives | Who runs it |
-| --- | --- | --- |
-| OpenFix package | Org reusable workflow **or** published Action (this repo today) | Thin job: checkout → `ingest` → `triage` → `remediate` |
-| Secrets | App repo (or org) Actions secrets | `CURSOR_API_KEY` (required). No target-URL secret when the Action runs *in* the app repo |
-| Policy | `policy.yaml` in OpenFix (or org-central override later) | Security / platform owns gates |
-| Agents | Cursor cloud (Cursor hosts the VMs) | You don’t run agent infra |
-| Verify gates | App repo `CI` workflow | Unit + scanner re-run before merge |
+Configure `.env` using [.env.example](.env.example):
 
-**Enterprise install path (say this)**
-
-1. Publish OpenFix as an **org reusable workflow** (one version, many apps).  
-2. In each app repo: after scanners upload SARIF → call that workflow (`workflow_call` / `workflow_run`).  
-3. Same-repo context: `GITHUB_REPOSITORY` + `github.sha` bind findings to the scanned snapshot.  
-4. Agents open **draft** fix PRs; humans + App CI authorize.
-
-**Scale model:** fan-out — same lane in every app pipeline — not one mega-job remediating the company. Concurrency / `getUsage` budgets are org policy on top.
-
-**Today vs next (one breath):** Demo = CLI + manual `workflow_dispatch` in this repo. Production = reusable workflow after real SARIF; optional platform API later if you outgrow Actions as the only trigger.
-
-## 3. Design decisions / trade-offs
-
-| Choice | Why |
+| Variable | Purpose |
 | --- | --- |
-| SARIF ingest | Vendor-agnostic; CI interchange; not another scanner silo |
-| Multi-file ingest | `ingest a.sarif b.json` merges artifacts; fingerprint dedupe (exact overlaps) |
-| `policy.yaml` outside the model | Enterprise control plane; live-extend without touching agent prompts |
-| Cloud agents + `autoCreatePR` | Durable jobs, real PR artifact, matches software-factory story |
-| Local CLI: `OPENFIX_TARGET_REPO` in `.env` | Laptop remediates a remote app repo; no Actions context |
-| Same-repo Actions: derive from `GITHUB_*` | Action installed in the app repo → `GITHUB_REPOSITORY` / `github.sha` are the target |
-| OpenFix run context at ingest | Binds findings → repo URL + commit SHA + run id; shown on ingest/triage; used by remediate |
-| Finding-lane board UI | Finding rows update in place; STATUS may show short agent hints; `--verbose` for full streams |
-| Fleet summary lists `bc-…` | After `--agents N`, each lane’s agent id is printable for `status` / `resume` (not only `--last`) |
-| Lean App CI (2 jobs) | Fast free-tier Checks; stubs stand in for Semgrep/OSV/CodeQL |
-| Simulated MCP ingest | Optional `--from simulated:semgrep`; SARIF remains the CI contract |
+| `CURSOR_API_KEY` | Cursor cloud authentication |
+| `OPENFIX_TARGET_REPO` | Repository the agent will change |
+| `OPENFIX_COMMIT_SHA` | Actual revision represented by the imported report |
+| `OPENFIX_STARTING_REF` | Optional clone ref when no scan commit is recorded; remediation prefers a stored scan commit |
+| `OPENFIX_MAX_CONCURRENT` | Concurrent-job cap, default 2 |
 
-## 4. Real now vs next (enterprise scale)
+For a credible end-to-end result, use a report produced from that repository and immutable revision. Configure the target before ingesting, and re-ingest the matching report after changing it: remediation prefers stored ingest context over later environment changes. The checked-in fixtures demonstrate import and policy; they do not establish the target's current vulnerabilities. Preserve existing `.openfix/` records when comparing attempts.
 
-| Real in this demo | Next (honest evolution) |
+### Import and explain routing
+
+```bash
+npm run openfix -- ingest fixtures/findings/demo.sarif
+npm run openfix -- triage
+```
+
+`ingest` prints the run ID, source and available repository/revision context, then writes local state and a run record. `triage` explains the `auto_fix`, `human_only` and `suppress_noise` buckets from [policy.yaml](policy.yaml). Imported claims have not been independently validated. The queue is principally severity-ordered.
+
+Optional local examples:
+
+```bash
+npm run openfix -- ingest fixtures/findings/demo.sarif fixtures/findings/extra.json
+npm run openfix -- ingest --from simulated:semgrep
+```
+
+Multi-file ingest deduplicates exact fingerprints. The simulated adapter is a stub, including the `mcp:` aliases; it makes no live scanner or MCP call.
+
+### Start a bounded cloud job and retain its identity
+
+After checking the target, revision, routing and intended remote changes:
+
+```bash
+npm run openfix -- remediate
+npm run openfix -- status --last
+```
+
+The default board shows finding, location and progress. Its final summary lists each durable `bc-…` agent ID and PR URL. The prompt requests a draft PR with provenance and test guidance; inspect the resulting PR description, diff, draft status and checks. Prompt instructions alone do not establish a production authorization boundary.
+
+For a specific eligible finding or a concurrent batch:
+
+```bash
+npm run openfix -- remediate --fingerprint semgrep-cmdi-001
+npm run openfix -- remediate --agents 2
+```
+
+`--verbose` prints the full stream. `--all-auto` currently starts one batch up to the concurrency cap; it does not repeatedly drain the remaining queue. Every additional job can consume cloud usage and create another PR. Remediation exits nonzero for thrown, unsuccessful or no-PR outcomes.
+
+### Respond to review and observe CI
+
+Use the specific agent ID from the summary when several jobs exist:
+
+```bash
+npm run openfix -- status bc-EXAMPLE
+npm run openfix -- resume bc-EXAMPLE --prompt "Address the review feedback and strengthen the regression test."
+npm run openfix -- verify --last
+npm run openfix -- verify --pr https://github.com/OWNER/REPO/pull/NUMBER --checklist
+```
+
+`status` and `resume` also support `--last`. CI polling needs `gh` authenticated for the PR's repository. Review the actual changed head revision and check results after a follow-up changes the patch.
+
+**`verify` is a CI observer.** It does not reproduce the vulnerability, run a scanner or independently validate the fix. It returns nonzero for observed failures but zero for pending or unavailable checks, and it does not enforce a named set of required checks. Skipped or neutral results cannot satisfy a required proof obligation. The companion demo application's scanner job is a placeholder, so its green status supplies no scanner assurance.
+
+To establish a fix, agree the proof first: finding evidence and prerequisites, the original failure where reproducible, legitimate behavior, security and regression checks at the exact changed revision, reviewer acceptance, and the customer's normal merge/deployment controls. Preserve failed, inconclusive and missing proof. The current CLI does not implement that complete evidence workflow.
+
+## Actions and the next integration
+
+The checked-in [OpenFix remediation workflow](.github/workflows/openfix-remediate.yml) is a manual `workflow_dispatch` entry point for the same CLI. In same-repository Actions, target and revision derive from `GITHUB_REPOSITORY` and `GITHUB_SHA` unless overridden. An input SARIF file still needs to represent that revision.
+
+Automatic scanner triggers, reusable `workflow_call` packaging, a published Action, global cost controls and the lifecycle workbench are proposed work. The customer architecture should choose the smallest useful integration; a hosted control plane is not required for every pilot.
+
+## Useful files to inspect
+
+| File | What it demonstrates |
 | --- | --- |
-| One app repo + one SARIF | Same OpenFix job wired after scanner upload in **each** service repo |
-| CLI `remediate` / `--agents 2` | GitHub Action matrix or per-repo workflow; concurrency = factory workers |
-| Deep `auto_fix` queue in fixtures | Production queue depth from real scanner noise + policy gates |
-| `--all-auto` capped by `OPENFIX_MAX_CONCURRENT` | Cost budgets via `Agent.getUsage` + org-wide caps |
+| [src/lifecycle/workflow.mjs](src/lifecycle/workflow.mjs) | Standalone state transitions and artifact-bound gates |
+| [scripts/demo-lifecycle.mjs](scripts/demo-lifecycle.mjs) | Explicitly simulated lifecycle evidence |
+| [src/cli.ts](src/cli.ts) | Running v1 commands, batch selection and error handling |
+| [src/ingest/load.ts](src/ingest/load.ts) | Report normalization |
+| [src/policy/engine.ts](src/policy/engine.ts) | Routing decisions and severity ordering |
+| [src/state/store.ts](src/state/store.ts) | Local findings, run provenance and executor records |
+| [src/remediator/agent.ts](src/remediator/agent.ts) | Cursor cloud execution, status and follow-up |
+| [src/remediator/prompt.ts](src/remediator/prompt.ts) | Legacy scanner assumption and requested PR behavior |
+| [src/verify.ts](src/verify.ts) | CI observation and its current readiness limits |
 
-**Scale framing:** SARIF is already per application. Enterprise scale is the same remediation lane in every app’s pipeline — not one mega-orchestrator that owns the org.
+For the broader design, use the [architecture contracts](docs/prep/refactor-plan.md) and [pilot worksheet](docs/prep/pilot-worksheet.md). They describe work still to implement and evidence still to collect.
 
-## 5. Limitations → evolution
-
-| Limitation now | Evolve to |
-| --- | --- |
-| Manual CLI kickoff | GitHub Action `OpenFix: SARIF → fix PRs` after scanner `workflow_run` |
-| Local CLI needs `OPENFIX_TARGET_REPO` | Put the Action in each app repo (`GITHUB_REPOSITORY` is the target). Override only if the workflow remediates a *different* repo than the one running the job |
-| Simple policy | Reachability, CODEOWNERS, severity SLAs |
-| Scanner stub on app CI | Real Semgrep/CodeQL/OSV as required checks; `verify` already polls via `gh` |
-| Remediate used to exit 0 on agent error | Fixed — non-zero if status ≠ finished or no PR |
-| No cost caps in UI | `Agent.getUsage` budgets per finding |
-| Simulated MCP ingest only | Real Semgrep/Snyk MCP clients behind the same Finding adapter |
-
-## 6. Live-extend menu (practice today)
-
-| If they say… | You do / say… |
-| --- | --- |
-| “Isn’t Actions just a script?” | Hook vs product — see §2b; agents + policy are the system |
-| Block another path | Edit [`policy.yaml`](policy.yaml) — add `payments` under `sensitive_path_segments` → `triage` |
-| Fix a specific finding | `npx tsx src/cli.ts remediate --fingerprint semgrep-cmdi-001` |
-| Concurrent factory | `npx tsx src/cli.ts remediate --agents 2` |
-| Drain queue (warn: time/cost) | `npx tsx src/cli.ts remediate --all-auto` |
-| Reviewer feedback | `npx tsx src/cli.ts resume --last --prompt "…"` |
-| Prove it’s fixed | `verify --last` (compact App CI poll) + PR Checks tab |
-| Another service | Change `OPENFIX_TARGET_REPO` in `.env` only (demo); prod = Action in that repo |
-
-### Live-extend rehearsal (policy)
-
-1. `npx tsx src/cli.ts ingest fixtures/findings/demo.sarif && npx tsx src/cli.ts triage`
-2. Open `policy.yaml`, add `- payments` under `sensitive_path_segments`
-3. `npx tsx src/cli.ts triage` again — same findings, new gate; agents never see payments paths for `auto_fix`.
-4. Revert the YAML line after (or leave it and explain).
-
-## Files to open if they dive into code
-
-| File | Story |
-| --- | --- |
-| `src/cli.ts` | Pipeline commands + concurrent remediate / lane board wiring |
-| `src/cli/helpers.ts` | `LaneBoard` (in-place STATUS + spinner), fleet/next helpers |
-| `src/config.ts` | `OPENFIX_*` overrides + `GITHUB_*` derivation (repo / SHA / run id) |
-| `src/state/store.ts` | Findings + remediations + `currentRun` / `.openfix/runs/` |
-| `policy.yaml` | Live-extend control plane |
-| `src/policy/engine.ts` | Deterministic triage |
-| `src/remediator/agent.ts` | Cursor SDK cloud create/stream/wait/resume; uses run context |
-| `src/ingest/load.ts` | SARIF / findings JSON → Finding |
-| `src/ingest/simulated-mcp.ts` | Optional MCP-style adapter stub (`ingest --from …`) |
-| `src/remediator/prompt.ts` | Separation of duties + scanner re-run gate |
-| `src/verify.ts` | Compact App CI poll (+ optional `--checklist`) |

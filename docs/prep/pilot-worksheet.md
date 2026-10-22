@@ -22,7 +22,7 @@ One service and one issue class, a small approved data set, isolated execution, 
 | Stage | Deliverable | Decision owner |
 | --- | --- | --- |
 | Baseline | Approved data flow, threat model, labeled examples, current effort and cycle time | Security + service owner |
-| Prototype | Reproducible findings, controlled patches, recorded failures and proof gaps | Implementation engineer |
+| Prototype | Evidence-supported findings, reproduction where feasible, controlled patches, recorded failures and proof gaps | Implementation engineer |
 | Evaluate | Independent verification, reviewer assessment, cost and effort comparison | Security reviewer |
 | Decide | Expand one scope dimension, revise, or stop | Customer sponsor + security owner |
 

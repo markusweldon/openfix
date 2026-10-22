@@ -8,7 +8,7 @@ Help a customer make a defensible decision about a useful, secure AI-enabled wor
 
 ## A flexible five-part whiteboard
 
-Draw five areas and fill them from the customer's answers:
+Draw five areas, or open the [editable Excalidraw template](customer-workflow.excalidraw), and fill them from the customer's answers:
 
 1. **Outcome and people:** what hurts, who is affected, sponsor, operator, security owner, service owner, success.
 2. **Current workflow and evidence:** inputs, tools, assets, versions, queues, handoffs, baseline delay and existing controls.
