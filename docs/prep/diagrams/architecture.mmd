@@ -1,0 +1,16 @@
+flowchart TB
+  subgraph sources[Evidence sources]
+    A[Codex Security discovery + validation]
+    B[Scanner imports]
+    C[Cloud inventory + runtime context]
+  end
+  A --> D[OpenFix lifecycle + evidence store]
+  B --> D
+  C -->|Explicit asset + revision mapping| D
+  D --> E[Isolated remediation executor]
+  E --> F[Independent verification of exact patch]
+  F --> G[Human review]
+  G --> H[Separate publication identity]
+  H --> I[Protected merge + rollout]
+  I --> J[Revalidation + explicit closure]
+  J --> D

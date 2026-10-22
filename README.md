@@ -1,5 +1,18 @@
 # OpenFix
 
+The [preparation pack](docs/prep/README.md) now includes an editable deck, PDF, speaker notes, workflow and architecture diagrams, a pilot worksheet, and a [full lifecycle refactor proposal](docs/prep/refactor-plan.md).
+
+![Proposed OpenFix security lifecycle](docs/prep/diagrams/lifecycle.svg)
+
+The current v1 application is the Cursor-based remediation orchestrator described below. A new [lifecycle domain prototype](src/lifecycle/workflow.mjs) models validation, acceptance, patch identity, verification, review, revalidation, and closure; live product integrations and the complete workbench remain proposed.
+
+```bash
+npm run test:lifecycle
+npm run demo:lifecycle
+```
+
+## Current v1 implementation
+
 **Scanner findings in. Cursor agents remediate. PRs out for human review.**
 
 OpenFix is an enterprise SDLC remediation orchestrator built on the [Cursor SDK](https://cursor.com/docs/sdk/typescript). Deterministic security scanners (Snyk, Semgrep, GHAS, Checkmarx, Trivy, …) remain the source of truth for *detection*. Cursor cloud agents propose *remediations* as pull requests. Humans *authorize* merges.
@@ -185,3 +198,4 @@ See [`.env.example`](.env.example). Never commit `.env` or `.openfix/`.
 ## License
 
 MIT
+
