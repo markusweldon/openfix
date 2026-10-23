@@ -51,6 +51,14 @@ Download an `.excalidraw` file, open [Excalidraw](https://excalidraw.com), and c
 
 For a discovery-led discussion, the [blank customer-workflow canvas](../prep/customer-workflow.excalidraw) remains available. Fill that canvas from the customer's answers rather than assuming the reference application matches their scenario.
 
+## View in VS Code
+
+**Excalidraw:** install [Excalidraw by pomdtr](https://marketplace.visualstudio.com/items?itemName=pomdtr.excalidraw-editor), the extension recommended by this workspace. Open `02-system-boundaries.excalidraw`. If an existing tab still displays JSON, run **Excalidraw: Open Excalidraw** from the Command Palette, or right-click its tab and choose **Reopen Editor With… → Excalidraw**. The workspace associates `.excalidraw` files with that visual editor.
+
+**Mermaid:** open [architecture.md](../architecture.md), then run **Markdown: Open Preview to the Side** from the Command Palette, or press **Shift+Cmd+V** on macOS / **Ctrl+Shift+V** on Windows and Linux. The diagrams render inside the Markdown preview; standalone `.mmd` files are source definitions. [VS Code 1.121 and later include Mermaid support](https://code.visualstudio.com/updates/v1_121). For an older version or a fork without that feature, install [Markdown Preview Mermaid Support](https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid).
+
+**Immediate previews:** open this README in Markdown preview to see all three PNG exports, or open a `.png` file directly. These static views require no Excalidraw extension. The native `.excalidraw` files provide editing and source links.
+
 ## Rebuild and verification
 
 `python scripts/build-architecture-whiteboards.py` regenerates the three editable scenes using only Python's standard library. Export updated previews from Excalidraw as SVG and PNG after changing a scene. The checked-in previews were exported through the native Excalidraw 0.18.1 APIs.

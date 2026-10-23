@@ -8,6 +8,8 @@ Read the first four diagrams in order for the system story. The data model expla
 
 For a visual conversation, the [editable Excalidraw whiteboards](whiteboards/README.md) distill this detail into three views: customer value, system boundaries, and proof before approval. Their source links lead back to this guide and the implementation.
 
+**Viewing in VS Code:** open this Markdown file and run **Markdown: Open Preview to the Side**. Current VS Code renders the Mermaid blocks in that preview. The `.mmd` files contain their editable source. See [editor setup](whiteboards/README.md#view-in-vs-code) for Excalidraw and older VS Code versions.
+
 ## 1. Implemented components and trust boundaries
 
 ```mermaid
