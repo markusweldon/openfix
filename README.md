@@ -1,25 +1,49 @@
 # OpenFix
 
-**Findings to evidence. Evidence to action.** OpenFix 0.2 is a local findings-intelligence and controlled-remediation workbench. It takes reports from different tools, preserves their existing enrichment, investigates evidence gaps, and carries decisions through validation, triage, exact-patch verification and review.
+**Findings to evidence. Evidence to action.** OpenFix 0.2 is a local harness for AI-assisted security workflows. It connects reports and existing enrichment to investigation, validation, customer decisions, bounded remediation and exact-patch review.
 
-![OpenFix review workbench](docs/demo/workbench.png)
+The customer problem is the work between a security signal and a defensible change: reconciling what different tools already know, establishing applicability, finding an accountable owner, and deciding whether a proposed fix is safe. OpenFix makes that evidence and decision history portable across tools and agent hosts.
 
-## Run the integrated workflow
+## Walk through the repository
 
-The core uses Node.js 22.13+ and its standard library. From the repository root:
+Start with the [repository walkthrough](docs/repository-walkthrough.md). It is a reading path through the value, code, tests and design choices; it requires no running application or prepared playback.
 
-```bash
-node src/openfix.mjs demo --out /tmp/openfix-workbench.html
+- [AI security and DevSecOps](docs/ai-security-model.md): what AI changes, what mature security programs already do, and the distinction between securing software with AI and securing AI systems.
+- [System architecture and detailed Mermaid diagrams](docs/architecture.md): components, trust boundaries, evidence decisions, lifecycle, agent handoffs, data model and production evolution.
+- [Input and evidence contracts](docs/input-contracts.md): what crosses a boundary and what authority it carries.
+- [Roadmap](ROADMAP.md): the next implementation increments and their acceptance criteria.
+
+## System at a glance
+
+```mermaid
+flowchart TB
+  Inputs["Security reports and existing enrichment<br/>Asset context and pinned source"] --> Case["Persistent case and evidence assessment<br/>Preserve, correlate, reuse and expose gaps"]
+  Case --> Investigate["Investigate decision-changing gaps<br/>Scoped check, native task or reviewed evidence"]
+  Investigate --> Decision["Record validation and human acceptance<br/>Proof, owner, priority and bounded work"]
+  Decision --> Artifact["Authorized remediation task and proposed change<br/>Record actual Git base, head and diff digest"]
+  Artifact --> Verify["Independent security and legitimate-behavior checks<br/>Then human review of the exact artifact"]
+  Verify --> Change["Customer change process<br/>Separate rollout and closure evidence"]
+  Verify -. "Failed or incomplete proof" .-> Case
+  Case --> View["Read-only evidence and decision view"]
 ```
 
-Open the resulting HTML file. The command prints the persistent store location; inspect or serve the same cases with:
+The implemented control flow is local. Native Codex execution happens in a separately approved host; the optional Cursor adapter can publish a draft PR only with explicit authorization. The reference validator covers one invoice-authorization contract, while broader validators and production workers remain future work.
 
-```bash
-node src/openfix.mjs list --store /tmp/PRINTED-DEMO-DIRECTORY/workflow
-node src/openfix.mjs serve --store /tmp/PRINTED-DEMO-DIRECTORY/workflow
-```
+## Why an AI security harness
 
-The [recorded interactive demo](docs/demo/workbench.html) is checked in for download and local viewing. The [walkthrough](DEMO.md) explains its decisions and commands. The reports are synthetic; the reference application, vulnerability probe, bad patch and corrected patch are real local code executions. No live scan, model request or deployment is claimed.
+Mature DevSecOps already includes enrichment, triage, validation, ownership and change control. AI can help investigate unfamiliar source paths, connect context and propose changes across varied cases. That also creates a need to constrain tool access, treat retrieved content as untrusted data, retain uncertainty and verify outputs independently.
+
+OpenFix provides the surrounding harness: persistent case state, evidence contracts, action gates, bounded task packets, failure records and artifact-bound review. It does not embed a model or claim that a model verdict proves a vulnerability or a fix. The [AI security model](docs/ai-security-model.md) explains both the opportunity and the additional evaluation required.
+
+| Customer value hypothesis | Mechanism to inspect in this repository |
+| --- | --- |
+| Reduce repeated investigation | Preserve producer enrichment and reuse matching, current evidence |
+| Improve decision quality | Keep conflicting, stale and inconclusive evidence visible |
+| Make agent work reviewable | Carry scope, evidence gaps, allowed actions and expected outputs in a task packet |
+| Avoid accepting plausible but harmful fixes | Verify security and legitimate behavior against the exact changed artifact |
+| Support controlled adoption | Keep priority, acceptance, execution, publication, review and closure as distinct decisions |
+
+These are pilot hypotheses, not measured customer results. The [pilot worksheet](docs/prep/pilot-worksheet.md) defines effort, accepted outcomes, false fixes, cost and boundary-violation measures.
 
 ## What happens to a finding
 
@@ -33,7 +57,7 @@ The [recorded interactive demo](docs/demo/workbench.html) is checked in for down
 | **Verify and review** | Bind a real Git diff to its base/head and digest. Check the original issue and legitimate behavior at the exact changed head. Missing or failed checks block approval. Patch changes invalidate prior verification and review. |
 | **Retain the decision** | Persist cases, evidence, unsuccessful attempts and an audit chain. Rollout and closure record explicit operator attestations; the application does not merge or deploy changes. |
 
-The actual `openfix` / `dev` entry points now run this workflow. The lifecycle domain is integrated with persistent cases; it is no longer only a separate demonstration. The original Cursor pipeline remains available through `npm run legacy -- ...` and as an optional executor bridge.
+The default `openfix` / `dev` entry points own this workflow and its persistent cases. The original Cursor pipeline remains available through `npm run legacy -- ...` and as an optional executor bridge.
 
 ## Bring reports and context
 
@@ -60,7 +84,9 @@ OpenFix follows the public [Defense Factory](https://openai.com/the-defense-fact
 - **Promptfoo:** an optional future lane for evaluating agent behavior, including hostile evidence and unauthorized tool use. It is separate from verifying a code fix.
 - **Endor Labs Agent Kit:** a [public reference](https://github.com/endorlabs/endor-labs-agent-kit) for task workflows and evidence/output contracts. No Endor API integration is claimed.
 
-## Verify and develop
+## Engineering checks and local fixtures
+
+The core uses Node.js 22.13+ and its standard library. Maintainers can run the checks below; none is needed to follow the repository walkthrough.
 
 ```bash
 npm install --ignore-scripts
@@ -70,7 +96,7 @@ npm run build
 npm run demo -- --out /tmp/openfix-workbench.html
 ```
 
-The demo retains five source observations across four cases and five attempted validation/verification runs. It includes a reproduced vulnerability, a disproved report, an unavailable validator and conflicting ownership; a deny-all patch fails before the correct patch passes. These demonstrate software behavior, not detection accuracy or customer ROI.
+The fixture workflow retains five source observations across four cases and five attempted validation/verification runs. It includes a reproduced vulnerability, a disproved report, an unavailable validator and conflicting ownership; a deny-all patch fails before the correct patch passes. Inspect the [fixture implementation](src/workflow/demo.mjs), [assertions](tests/workflow.test.mjs) and [maintainer instructions](DEMO.md) as software evidence. These do not establish detection accuracy, model quality or customer ROI.
 
 ## Scope and next work
 
@@ -78,7 +104,7 @@ The reference validator is a bounded local process with explicit execution. It i
 
 Production identity, isolated workers, authenticated evidence ingestion, live connector qualification and deployment verification are the next increments in the [roadmap](ROADMAP.md). The [verification record](docs/prep/validation.md) distinguishes tested behavior from those remaining requirements.
 
-The [purple visual reference deck and preparation pack](docs/prep/README.md) now describe this implementation. The supplied customer exercise requires no presentation; use the workbook and visuals as discussion aids.
+The [purple visual reference deck and preparation pack](docs/prep/README.md) support the same repository discussion. A customer working session should follow the supplied problem and constraints; this material is optional reference, not a required presentation.
 
 ## License
 

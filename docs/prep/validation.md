@@ -11,9 +11,11 @@
 
 ## Visual and documentation checks
 
-The workbench uses current persisted case data and supports read-only case selection, filtering and evidence inspection. Chromium checks selected all four cases, filtered to the inconclusive dependency and conflicting-owner cases, and reported no JavaScript errors. The recorded HTML contains only reference-demo data.
+The workbench uses persisted case data and supports read-only case selection, filtering and evidence inspection. Prior Chromium checks selected all four fixture cases, filtered to the inconclusive dependency and conflicting-owner cases, and reported no JavaScript errors. Checked-in playback HTML and screenshots have been removed; the repository-reading path now leads the documentation.
 
-The revised purple deck has 16 slides, 16 speaker notes and 16 exported PDF pages. Rendered contact-sheet and dense-slide inspection found no visible overflow; PDF text spans remain within page bounds. It embeds the actual workbench screenshot. Main body text contrast is at least 14.37:1. Mermaid, SVG and PNG sources describe the same implemented architecture and gates. The editable whiteboard validates with 58 elements, 17 prompts and no external assets.
+The revised purple repository companion has 16 slides, 16 speaker notes and 16 exported PDF pages. Rendered contact-sheet and changed-slide inspection found no visible overflow; PDF text spans remain within page bounds. It has no embedded screenshots or playback dependency. Main body text contrast is at least 14.37:1. The editable whiteboard validates with 58 elements, 17 prompts and no external assets.
+
+The README, detailed architecture guide and AI security guide include nine Mermaid diagrams. The six architecture diagrams also have matching standalone `.mmd` sources. Documentation checks cover embedded/source agreement, local links and Mermaid rendering. Source and tests remain the basis for implementation claims; the proposed production and agent-evaluation diagrams are labeled separately.
 
 ## Limits
 

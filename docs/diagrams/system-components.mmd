@@ -1,0 +1,38 @@
+flowchart TB
+  subgraph Inputs["External inputs: evidence, not instructions"]
+    Reports["SARIF, GitHub alerts, Snyk JSON<br/>Codex Security scan JSON, OpenFix envelopes"]
+    Context["Asset context and customer brief<br/>Owner, exposure, importance, deployed revision"]
+    Source["Local repository<br/>Clean, pinned immutable commit"]
+  end
+  subgraph Local["Implemented local application: operator workstation"]
+    CLI["src/openfix.mjs<br/>Explicit commands and execution flags"]
+    Import["import.mjs<br/>Normalize, scope and correlate; retain originals"]
+    Enrich["enrich.mjs<br/>Exact context joins, freshness and conflicts"]
+    Ops["operations.mjs<br/>Case operations and artifact checks"]
+    Domain["lifecycle/workflow.mjs<br/>Decision invariants and invalidation"]
+    Store["store.mjs<br/>Locked, atomic JSON writes and audit checkpoints"]
+    Validator["validation.mjs + tenant-probe.mjs<br/>Narrow local reference profile"]
+    Packet["case.json + instructions.md<br/>Subject, evidence, permitted actions and limits"]
+    Bridge["providers.mjs + cursor-bridge.ts<br/>Optional explicitly authorized Cursor job"]
+    Report["report.mjs<br/>Read-only HTML and loopback HTTP view"]
+  end
+  subgraph Outside["Separate execution and change systems"]
+    Host["Approved native Codex / security host<br/>Operator gives it the task packet"]
+    Cursor["Cursor cloud executor<br/>May publish an authorized draft PR"]
+    Change["Customer review, merge and deployment systems<br/>Rollout evidence is manually attested here"]
+  end
+  Reports --> CLI --> Import --> Store
+  Context --> Enrich
+  Source --> Enrich --> Store
+  CLI --> Enrich
+  CLI --> Ops --> Domain
+  Ops <--> Store
+  Ops --> Validator
+  Source --> Validator
+  Validator --> Ops
+  Ops --> Packet --> Host
+  CLI --> Bridge --> Cursor
+  Store --> Report
+  Host -->|"Proposed change; separate recording required"| Ops
+  Cursor -->|"PR identity is not fix verification"| Ops
+  Change -.->|"Operator records external rollout evidence"| Ops

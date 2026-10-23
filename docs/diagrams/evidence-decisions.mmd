@@ -1,0 +1,27 @@
+flowchart TD
+  Input["Source report, context export or local observation"] --> Preserve["Preserve original redacted record<br/>Producer, source reference and artifact digest"]
+  Preserve --> Scope{"Evidence subject matches<br/>repository, revision and asset?"}
+  Scope -->|"No"| Exclude["Keep for provenance<br/>Exclude from current context"]
+  Scope -->|"Yes / inherited report scope"| Time{"Collection time and expiry usable?"}
+  Time -->|"Missing, expired or future"| Refresh["Flag unknown, stale or future<br/>Request refresh or investigation"]
+  Time -->|"Current"| Latest["Use latest evidence per origin and producer<br/>Retain older records in history"]
+  Latest --> Value{"Supported value for this field?"}
+  Value -->|"No"| Unsupported["Unknown or unsupported context<br/>Does not satisfy readiness gates"]
+  Value -->|"Yes"| Conflict{"Do current producers disagree?"}
+  Conflict -->|"Yes"| Resolve["Keep competing evidence<br/>Resolve the conflict before accepting scope"]
+  Conflict -->|"No"| Kind{"What decision can this evidence support?"}
+  Kind -->|"Owner, exposure or other context"| Reuse["Reuse with provenance and authority visible<br/>Available context does not prove exploitability"]
+  Kind -->|"Producer validation claim"| Claim["Keep as upstream assertion<br/>No automatic confirmation"]
+  Claim --> Review["Operator reviews method, exact revision<br/>proof and limitations"]
+  Review --> Attest["Explicit external-evidence attestation<br/>Source analysis or runtime method stated"]
+  Kind -->|"Need independent local validation"| Capability{"Approved profile covers this case<br/>and execution is explicitly allowed?"}
+  Capability -->|"No / environment unavailable"| Inconclusive["Inconclusive; retain unsuccessful attempt"]
+  Capability -->|"Yes"| Probe["Execute scoped check at pinned revision<br/>Observe security and legitimate behavior"]
+  Probe --> Outcome["Confirmed, disproved or inconclusive<br/>Retain method, checks, digest and limits"]
+  Attest --> Outcome
+  Reuse --> Plan["Evidence plan<br/>Reuse, refresh, collect, review or resolve"]
+  Refresh --> Plan
+  Resolve --> Plan
+  Exclude --> Plan
+  Unsupported --> Plan
+  Outcome --> Plan

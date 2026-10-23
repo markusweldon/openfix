@@ -1,0 +1,71 @@
+erDiagram
+  WorkflowStore ||--o{ SecurityCase : contains
+  WorkflowStore ||--o{ InputArtifact : retains
+  WorkflowStore ||--o{ AuditEvent : chains
+  SecurityCase ||--|{ Observation : groups
+  InputArtifact ||--o{ Observation : supplies
+  SecurityCase ||--o{ Evidence : assesses
+  Observation o|--o{ Evidence : attributes_upstream_claims
+  SecurityCase ||--o{ CheckRun : retains_attempts
+  SecurityCase ||--o| Lifecycle : tracks
+  SecurityCase ||--o{ PatchArtifact : retains_history
+  Lifecycle ||--o| CurrentPatch : selects
+  CurrentPatch ||--o| Verification : requires
+  CurrentPatch ||--o| HumanReview : binds
+  SecurityCase {
+    string id
+    string correlationKey
+    string repository
+    string revision
+    string assetId
+    string acceptedContextDigest
+  }
+  Observation {
+    string id
+    string producer
+    string sourceId
+    string artifactDigest
+    object original
+  }
+  Evidence {
+    string kind
+    object value
+    string producer
+    string authority
+    string revision
+    string collectedAt
+    string artifactDigest
+  }
+  CheckRun {
+    string purpose
+    string status
+    string revision
+    string patchHash
+    array checks
+    array limits
+  }
+  CurrentPatch {
+    string baseCommit
+    string headCommit
+    string sha256
+    array files
+    object author
+  }
+  Verification {
+    string patchHash
+    string commit
+    string status
+    object actor
+  }
+  HumanReview {
+    string patchHash
+    string decision
+    string reason
+    object actor
+  }
+  AuditEvent {
+    int sequence
+    string previous
+    string hash
+    object detail
+  }

@@ -2,7 +2,7 @@
 
 Original hypothetical scenario: a multi-tenant billing service has security findings from code review and scanners, cloud exposure metadata, and runtime observations. The team wants to reduce investigation and remediation effort while keeping evidence and review quality.
 
-The [integrated OpenFix demo](../../DEMO.md) exercises this type of workflow with synthetic reports and actual reference-code checks. Use it to inspect evidence and failure branches; customer targets and baselines still need discovery.
+The [repository walkthrough](../repository-walkthrough.md) traces this type of workflow through source and tests. Use it to discuss evidence, failure branches and design choices; customer targets and baselines still need discovery.
 
 ## Discovery before architecture
 

@@ -1,6 +1,6 @@
 # OpenFix: implemented workflow and next increments
 
-OpenFix 0.2 makes findings intelligence and controlled remediation the primary application. The [README](../../README.md), [architecture](../architecture.md) and [walkthrough](../../DEMO.md) describe the runnable implementation.
+OpenFix 0.2 makes findings intelligence and controlled remediation the primary application. The [README](../../README.md), [architecture](../architecture.md), [AI security model](../ai-security-model.md) and [repository walkthrough](../repository-walkthrough.md) explain its value, implementation and tradeoffs without running it.
 
 ## What changed
 
@@ -18,7 +18,7 @@ The original application imported scanner findings, routed them through policy a
 | Fix evidence and review | Actual Git diff/head identity, security and legitimate-behavior checks, changed-patch invalidation and different-actor review gates |
 | Customer recommendation | Read-only workbench with evidence, unsuccessful attempts, next decision and explainable priority; pilot measures remain to be agreed with a real customer |
 
-## Evidence from the integrated demo
+## Evidence to inspect in the code and tests
 
 Five synthetic source observations become four cases. Four reference probes actually execute and one unavailable-profile attempt stays inconclusive. A vulnerable lookup is confirmed, an already protected lookup is disproved, and conflicting owner context remains visible. A deny-all patch fails the legitimate-behavior check before the corrected patch passes and receives artifact-bound review. No model, live scanner or deployment result is claimed.
 

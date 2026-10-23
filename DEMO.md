@@ -1,4 +1,6 @@
-# OpenFix 0.2: a findings-to-decision walkthrough
+# Maintainer reference: executable fixtures
+
+For a customer or architecture conversation, use the [repository walkthrough](docs/repository-walkthrough.md) and [Mermaid architecture guide](docs/architecture.md). This file documents optional local engineering checks. It is not the suggested conversation flow.
 
 Run this from the repository root with Node.js 22.13+:
 
@@ -54,7 +56,7 @@ node src/openfix.mjs plan CASE_ID --store /tmp/DEMO-DIRECTORY/workflow \
 node src/openfix.mjs serve --store /tmp/DEMO-DIRECTORY/workflow --port 4317
 ```
 
-The workbench is read-only and binds to loopback. It shows actual persisted cases, evidence, attempts, artifacts and decisions. The downloadable [recorded casebook](docs/demo/workbench.html) uses the same renderer. It contains only the reference demo's data.
+The workbench is read-only and binds to loopback. It shows the cases, evidence, attempts, artifacts and decisions in the supplied local store. Its renderer is implemented in [report.mjs](src/workflow/report.mjs); no checked-in casebook is needed to inspect that code.
 
 ## Bring a customer case
 

@@ -2,6 +2,7 @@
 """Rebuild OpenFix's original presentation and diagrams. No network required."""
 from pathlib import Path
 import math
+import sys
 import base64
 from io import BytesIO
 import textwrap
@@ -100,13 +101,13 @@ def ppt_background(slide):
 def wrap(text, width=43):
     return '\n'.join(textwrap.fill(part, width=width) if part else '' for part in text.split('\n'))
 
-def base(title, subtitle='', number=1, label='CUSTOMER WORKFLOW / VISUAL REFERENCE'):
+def base(title, subtitle='', number=1, label='REPOSITORY WALKTHROUGH / IMPLEMENTATION REFERENCE'):
     s = [rect(0, 0, 1600, 900, BG), rect(70, 62, 42, 7, MINT),
         txt(130, 47, 1300, 36, 'OPENFIX / ' + label, 20, MINT, True),
          txt(70, 125, 1470, 100, title, 56, WHITE, True),
          txt(74, 226, 1430, 90, subtitle, 30, MUTED),
          line(70, 829, 1530, 829, LINE, False),
-         txt(73, 850, 1360, 28, 'OpenFix 0.2 • Local implementation / recorded demo', 17, CAPTION),
+         txt(73, 850, 1360, 28, 'OpenFix 0.2 • Repository walkthrough / implementation reference', 17, CAPTION),
          txt(1450, 845, 90, 35, f'{number:02}', 21, MINT, True)]
     return s
 
@@ -167,16 +168,16 @@ def picture(x,y,w,h,path,crop=None):
 slides=[]
 def add(scene,notes):slides.append((scene,notes))
 
-s=base('Evidence to action.','OpenFix 0.2 • A local security-case workflow\nMarkus Weldon • Independent implementation and recorded demo',1,'FINDINGS INTELLIGENCE')
+s=base('Evidence to action.','OpenFix 0.2 • A local security-case workflow\nMarkus Weldon • Repository walkthrough and implementation reference',1,'FINDINGS INTELLIGENCE')
 s[3]['h']=130;s[4]['y']=276;s[4]['h']=100
 for i,(title,body) in enumerate([('PRESERVE','What security tools already know'),('INVESTIGATE','The gaps that change a decision'),('VERIFY','The exact change and its behavior')]):
     s += card(75+i*510,445,470,320,f'0{i+1}',title,body,body_size=32)
-add(s,'OpenFix is now an implemented local workflow, not a standalone lifecycle prototype. The default CLI persists cases, imports evidence, assesses context, validates supported cases, records acceptance, binds a committed diff, verifies it and records human review. The recorded demo uses synthetic reports and actual local fixture probes. It makes no model call, live scanner call, merge or deployment. Use these visuals only if they help the customer conversation; the exercise requires no prepared presentation.')
+add(s,'Use this as an optional companion while reading the repository and explaining its value. The default CLI persists cases, imports evidence, assesses context, validates supported cases, records acceptance, binds a committed diff, verifies it and records human review. The code and tests include synthetic reports and trusted local fixture checks. There is no live AI execution claim, live scanner integration, merge or deployment to show. The interview is a collaborative working session that requires no prepared presentation. Follow the customer scenario and use a relevant file or diagram only if it helps.')
 
-s=base('Preserve knowledge. Investigate the gaps.','A new finding should arrive with the producer context that already exists.',2)
-for i,(k,t,b) in enumerate([('Keep','Upstream evidence','Retain source records, enrichment, provenance and coverage gaps.'),('Assess','Decision-changing gaps','Check subject, freshness and conflicts before planning more work.'),('Act','Explicit authority','Separate suggested priority, accepted scope, patch proof and review.')]):
-    s += card(75+i*510,335,470,440,k,t,b)
-add(s,'Start by asking where customer effort is lost: finding investigation, ownership, acceptance, remediation or review. Security tools may already provide reachability, validation, exploitability, ownership, runtime and code evidence. OpenFix preserves that material and plans around missing or conflicting evidence rather than blindly rerunning every stage. A priority suggestion does not grant execution authority. Producer assertions are not automatically independent proof.')
+s=base('What AI adds to a mature security workflow','Keep established DevSecOps controls; add adaptive investigation and proposals behind evidence gates.',2)
+for i,(k,t,b) in enumerate([('Mature DevSecOps','Established controls','Scanners, tests, CI policy, ownership and release controls remain the foundation.'),('Potential AI contribution','Adaptive investigation','Reason across code and context. Propose focused checks and bounded changes.'),('OpenFix role','Independent evidence gates','Preserve provenance, expose gaps, verify exact changes and record human decisions.')]):
+    s += card(75+i*510,335,470,440,k,t,b,body_size=31)
+add(s,'Mature DevSecOps already includes investigation, correlation, risk assessment, automation, testing and human review. The opportunity for AI is flexible reasoning across unfamiliar code and evidence, generating hypotheses, selecting useful follow-up work and proposing changes with less bespoke glue. Those benefits are hypotheses to measure, not properties proven by these fixtures. OpenFix implements the context and decision substrate: preserve what tools already know, expose missing or conflicting evidence, constrain a proposed action and independently verify the exact change. Its portable packets and optional executor can host an AI contribution, but the repository does not currently execute an OpenAI model. Explain value through code boundaries, tests and tradeoffs rather than promising autonomy or replacing CI.')
 
 s=base('Many observations, one persistent case','Implemented adapters normalize source exports while retaining their original evidence.',3)
 rows(s,[('SARIF','Rules, locations, tool identity and result properties'),('GHAS + Snyk','Code-scanning alerts and dependency findings'),('Codex Security JSON','Scan findings, manifest, coverage and deferred surfaces'),('Case correlation','Link matching observations; retain each source record'),('Durable local state','JSON records, atomic writes, exclusive lock and audit chain')],y=325,step=90,left=355,body_size=28)
@@ -186,25 +187,34 @@ s=base('Reuse evidence and preserve its authority','The evidence plan says what 
 rows(s,[('Subject','Repository, revision and asset must match the case'),('Freshness','Use collection time / expiry; flag stale or unknown dates'),('Provenance','Keep producer, authority, source reference and artifact digest'),('Conflicts','Retain competing current claims; ask for a decision'),('Validation','Producer verdicts stay assertions until explicitly reviewed')],y=325,step=90,left=340,body_size=29)
 add(s,'Evidence records preserve upstream assertions separately from local evidence and explicit reviewed adoption of external validation. Context joins require the exact repository, asset and revision. Subject-mismatched evidence cannot silently change current context. The default freshness window is seven days, with explicit expiry supported; missing dates remain unknown and future timestamps are flagged. The freshest record per origin, producer and kind contributes to current assessment. Fresh contradictions remain visible instead of being overwritten by source precedence. The plan can reuse with provenance, refresh or verify, collect, resolve a conflict, or review upstream validation. A new or expired context record invalidates accepted scope where required.')
 
-add(architecture(5),'This diagram describes the implemented local architecture. The default src/openfix.mjs CLI calls the workflow modules and persistent store. File adapters supply findings and context, and a customer brief records goals and boundaries. The same stored cases feed assessment, the read-only HTML workbench and agent task packets. The built-in tenant-isolation profile runs trusted local fixture code only after explicit execution authorization. Its supported subject is CWE-639 at src/invoices.mjs:3; mismatched findings remain inconclusive. Optional Cursor dispatch calls the retained executor bridge. Neither local child-process bounds nor named actor labels are a production isolation or identity boundary. No live Codex Security scan is invoked by the demo.')
+add(architecture(5),'This diagram describes the implemented local architecture. The default src/openfix.mjs CLI calls the workflow modules and persistent store. File adapters supply findings and context, and a customer brief records goals and boundaries. The same stored cases feed assessment, the read-only HTML workbench and agent task packets. The built-in tenant-isolation profile runs trusted local fixture code only after explicit execution authorization. Its supported subject is CWE-639 at src/invoices.mjs:3; mismatched findings remain inconclusive. Optional Cursor dispatch calls the retained executor bridge. Neither local child-process bounds nor named actor labels are a production isolation or identity boundary. The repository imports supported scan output; it does not invoke a live Codex Security scan.')
 
-add(lifecycle(6),'The path is implemented through the default CLI. Imported evidence is assessed before additional investigation. Validation can confirm, disprove or remain inconclusive. Acceptance records owner, priority, rationale and context. A committed diff is then recorded with exact base, head and digest. A different actor runs the approved verification profile and a reviewer approves the exact patch hash. New context or a replacement patch can invalidate earlier decisions. Review does not merge or deploy. Rollout and closure commands require separate change records, exact deployed revision and post-change evidence; the demo stops at approved_for_change.')
+add(lifecycle(6),'The path is implemented through the default CLI. Imported evidence is assessed before additional investigation. Validation can confirm, disprove or remain inconclusive. Acceptance records owner, priority, rationale and context. A committed diff is then recorded with exact base, head and digest. A different actor runs the approved verification profile and a reviewer approves the exact patch hash. New context or a replacement patch can invalidate earlier decisions. Review does not merge or deploy. Rollout and closure commands require separate change records, exact deployed revision and post-change evidence; the local reference example stops at approved_for_change.')
 
-s=base('A workbench over the actual case store','Recorded local UI: source observations, next decision, evidence and change gates.',7)
-s += [rect(70,311,987,493),picture(76,317,975,481,ROOT/'docs/demo/workbench-overview.png',(0,.23,1,1)),
-      rect(1090,311,440,493),txt(1115,337,390,45,'One review surface',31,MINT,True),
-      txt(1115,407,390,290,'4 cases / 5 observations.\n\nEvidence, conflicts and the next decision.\n\nRead-only report.\nExplicit CLI actions.',29,MUTED)]
-add(s,'This is the actual generated workbench, not a design mockup. It reads the durable workflow store, presents case assessment, source observations, customer context, validation and change gates, an evidence plan, a provenance ledger and audit history. The slide crops the screenshot to the main workspace; open the HTML or full screenshot for detailed inspection. The interface is read-only. Suggested urgency is separate from the priority accepted by a reviewer. The recorded-demo banner states that reports are synthetic and local validation checks are real; there is no live scanner, model call or deployment.')
+s=base('A repository map for the conversation','Follow evidence from source imports through assessment, decisions and executable invariants.',7)
+repo='https://github.com/markusweldon/openfix/blob/main/'
+for i,(label,path,why) in enumerate([
+    ('Import','src/workflow/import.mjs','Keep reports and producer evidence.'),
+    ('Assess','src/workflow/enrich.mjs','Check subject, freshness and conflicts.'),
+    ('Act','src/workflow/operations.mjs','Accept, verify and review exact changes.'),
+    ('Enforce','src/lifecycle/workflow.mjs','Enforce lifecycle and patch identity.'),
+    ('Prove','tests/workflow.test.mjs','Test stale context and broken fixes.'),
+]):
+    y=325+i*91
+    s += [rect(75,y,1450,79),txt(98,y+19,175,44,label,30,MINT,True),
+          txt(290,y+24,520,40,path,25,CYAN,mono=True,href=repo+path),
+          txt(835,y+18,665,60,why,28,WHITE)]
+add(s,'Start at src/openfix.mjs for the CLI boundary and src/workflow/store.mjs for persistence. Then follow import.mjs to enrich.mjs to operations.mjs and the lifecycle state machine. The file links open the public repository. Read the tests alongside the implementation: tests/workflow.test.mjs covers workflow behavior, while tests/lifecycle.test.mjs concentrates on decision invariants. src/workflow/report.mjs is the read-only report surface. operations.mjs exports task packets; providers.mjs describes adapters and optional Cursor dispatch. The useful conversation is why these boundaries exist, which customer problem they address and where implementation limits remain. No application or model needs to run during the walkthrough.')
 
-s=base('The demo deliberately keeps four outcomes','Five synthetic observations become four cases; uncertainty stays visible.',8)
+s=base('Read the example as four distinct decisions','Synthetic source fixtures and local checks exercise supported, disproved and uncertain paths.',8)
 rows(s,[('Vulnerable lookup','Runtime confirmed → accepted → verified patch → reviewed'),('Protected lookup','Cross-tenant access blocked → disproved → dismissed'),('Dependency issue','No installed validation profile → inconclusive'),('Cloud context','Conflicting service owners → resolve the conflict')],y=333,step=100,left=355,body_size=29)
-s += [txt(80,756,1430,48,'Four completed tenant probes + one unavailable-profile attempt. No live scan, model call, merge or deployment.',25,CYAN)]
+s += [txt(80,756,1430,48,'Code and tests separate a useful finding, a protected path, missing proof and conflicting context.',25,CYAN)]
 add(s,'The synthetic reports produce five observations and four correlated cases. The tenant-isolation profile executes four times: vulnerable baseline, protected baseline, deliberately broken patch and corrected patch. The dependency profile is unavailable, creating a fifth attempted check with an incomplete outcome, not a successful reproduction. The protected case is disproved and dismissed. The cloud owner contradiction remains unresolved. Report the denominator honestly: these reference checks demonstrate workflow mechanics and negative cases, not model performance, generalized vulnerability coverage or a customer ROI result.')
 
-s=base('A patch can block the attack and still fail','Verification checks the security claim and legitimate behavior on the same exact artifact.',9)
+s=base('A false fix reveals the verification contract','Read the deny-all and tenant-scoped changes against security and legitimate-behavior assertions.',9)
 for i,(k,t,b,c) in enumerate([('Deliberately bad fix','Deny all requests','Security check: passed\nLegitimate behavior: failed\n\nVerification fails.\nHuman approval is blocked.',CORAL),('Corrected committed diff','Enforce tenant ownership','Security check: passed\nLegitimate behavior: passed\n\nVerification passes.\nReviewer approves the hash.',CYAN)]):
     s += card(75+i*750,335,700,440,k,t,b,c,body_size=31)
-add(s,'The reference fixture initially returns another tenant invoice. The first committed patch denies every request. It blocks the attacker but also breaks the legitimate owning tenant, so regression verification fails and the workflow rejects an approval attempt. The corrected committed patch adds the tenant predicate and preserves the legitimate lookup. Both checks pass and the reviewer approves that exact hash. The patch engine is a deterministic reference code edit in this demo; do not describe it as a model-generated fix. This is evidence of an important evaluation property: security-only success cannot justify a broken product.')
+add(s,'The reference fixture initially returns another tenant invoice. The first committed patch denies every request. It blocks the attacker but also breaks the legitimate owning tenant, so regression verification fails and the workflow rejects an approval attempt. The corrected committed patch adds the tenant predicate and preserves the legitimate lookup. Both checks pass and the reviewer approves that exact hash. The reference code edit is deterministic; it provides a testable example rather than evidence of model-generated remediation. This is evidence of an important evaluation property: security-only success cannot justify a broken product.')
 
 s=base('Approval belongs to an exact change','A plausible fix description is insufficient evidence for publication.',10)
 rows(s,[('Accepted scope','Owner, priority, rationale and context recorded'),('Artifact identity','Real git diff: committed base + head + SHA-256'),('Independent check','Verifier label differs from the patch author'),('Review gate','Passing security + regression checks, exact hash'),('After review','Normal publication, merge and deployment controls')],y=325,step=90,left=360,body_size=29)
@@ -213,11 +223,11 @@ add(s,'Patch recording binds a real git diff from the recorded base to a committ
 s=base('Give agents a bounded security case','Implemented handoffs preserve evidence, scope and expected outputs.',11)
 for i,(k,t,b) in enumerate([('Default','Portable task packet','Export case.json and instructions with provenance, gaps and permitted actions.'),('Native guidance','.agents skills','Use the approved security workflow; treat findings and tool output as untrusted data.'),('Optional executor','Cursor dispatch','Actor + execution + draft-PR authorization. Verify and review the returned patch.')]):
     s += card(75+i*510,335,470,440,k,t,b,body_size=31)
-add(s,'The agent packet carries the case subject, customer brief, observations, current evidence, gaps, action boundary and expected output contract. Instructions distinguish producer assertions, source analysis and runtime proof, and treat code comments, finding text and tool results as data rather than instructions. Packets are handoff artifacts; they do not themselves invoke an OpenAI model. The repository includes .agents skills for case investigation and patch verification. Optional Cursor dispatch reuses the existing executor, requires accepted scope, --execute, --publish-draft and a named --actor, and is not exercised in the recorded demo. Returned PRs still need exact-patch import, verification and review.')
+add(s,'The agent packet carries the case subject, customer brief, observations, current evidence, gaps, action boundary and expected output contract. Instructions distinguish producer assertions, source analysis and runtime proof, and treat code comments, finding text and tool results as data rather than instructions. Packets are handoff artifacts; they do not themselves invoke an OpenAI model. The repository includes .agents skills for case investigation and patch verification. Optional Cursor dispatch reuses the existing executor, requires accepted scope, --execute, --publish-draft and a named --actor, and is separate from the local reference checks. Returned PRs still need exact-patch import, verification and review.')
 
 s=base('Use native security capabilities','OpenFix complements security capabilities with customer evidence and change decisions.',12)
 rows(s,[('Defense Factory','Continuous operating model and reference architecture'),('Daybreak','Broader governed cyber-defense capability stack'),('Codex Security','Native code investigation, evidence, validation and fixes'),('Promptfoo','AI application and agent adversarial evaluation'),('OpenFix 0.2','Local evidence reuse, customer context and exact-change gates')],y=325,step=90,left=355,body_size=28)
-add(s,'This alignment uses public descriptions, not a claim about internal OpenAI architecture or an official integration. Start with native Codex Security functionality and use the documented contract of the customer environment. OpenFix imports supported Codex scan JSON but does not run a live scan in the demo. Defense Factory describes a continuous operating approach, and Daybreak encompasses a wider stack. Promptfoo helps evaluate AI applications and adversarial agent behavior; it is relevant when a model-driven step exists. Do not claim Promptfoo execution in this demo. ChatGPT Pro familiarization does not establish that every Cloud scan is included; confirm product access and billing separately.')
+add(s,'This alignment uses public descriptions, not a claim about internal OpenAI architecture or an official integration. Start with native Codex Security functionality and use the documented contract of the customer environment. OpenFix imports supported Codex scan JSON; live scanning is outside the implemented local path. Defense Factory describes a continuous operating approach, and Daybreak encompasses a wider stack. Promptfoo helps evaluate AI applications and adversarial agent behavior; it is relevant when a model-driven step exists. Promptfoo execution is not implemented in the repository. ChatGPT Pro familiarization does not establish that every Cloud scan is included; confirm product access and billing separately.')
 
 s=base('What remains for production','Keep the implemented controls and remaining boundaries visible.',13)
 for i,(k,t,b,c) in enumerate([('Implemented','Inspectable local controls','Persistent cases, exact joins, freshness checks, artifact binding, named actors and audit history.',MINT),('Still required','Production boundaries','Authenticated identities, isolated workers, egress and secret controls, durable service storage.',CORAL),('Still to prove','Real integrations + scale','Live connectors, model behavior, broader validators, customer-scale evals and operational recovery.',CYAN)]):
@@ -228,18 +238,18 @@ s=base('Lead a customer working session','The provided scenario sets the scope. 
 steps=[('01','Discover the problem','Outcome, people, bottleneck, constraints'),('02','Map the evidence','Existing tools, assets, revisions and trusted context'),('03','Choose a useful AI step','Native capability, integration gap and authority'),('04','Plan proof and rollout','Pilot, failure cases, owners and decision gate'),('05','Adapt in real time','Restate changed assumptions and revise the plan')]
 for i,(n,t,b) in enumerate(steps):
     y=325+i*90;s += [txt(80,y+8,70,55,n,34,MINT,True),txt(175,y+8,570,55,t,32,WHITE,True),txt(770,y+9,720,78,b,30,MUTED)]
-add(s,'Treat this as a collaborative customer exercise, not a product pitch or a requirement to demo OpenFix. Ask clarifying questions, state assumptions and explain tradeoffs. Discover the current workflow, stakeholders, approved data, constraints and desired business outcome. If new information changes a tool, identity, data or deployment assumption, revise the affected architecture and pilot instead of defending the original design. Use the whiteboard only when it helps. The billing example is an invented practice case and must not be assumed to match the provided customer scenario.')
+add(s,'Treat this as a collaborative customer working session. The repository is optional supporting evidence for a design discussion. Ask clarifying questions, state assumptions and explain tradeoffs. Discover the current workflow, stakeholders, approved data, constraints and desired business outcome. If new information changes a tool, identity, data or deployment assumption, revise the affected architecture and pilot instead of defending the original design. Use the whiteboard only when it helps. The billing example is an invented practice case and must not be assumed to match the provided customer scenario.')
 
 s=base('A pilot should lead to an operating decision','One service, one issue class and one accountable reviewer; measure the baseline first.',15)
 for i,(k,t,b) in enumerate([('Baseline','Know today’s work','Investigation effort, review time, accepted outcomes, delay and existing controls.'),('Evaluate','Include failure paths','Valid, disproved, stale, conflicting and missing proof. Bad fixes, cost and latency.'),('Decide','Expand, revise or stop','Agree evidence, owners, milestones and limits. Expand one scope dimension at a time.')]):
     s += card(75+i*510,335,470,440,k,t,b,body_size=31)
-add(s,'Agree the business problem and baseline before setting targets. Measure investigator and reviewer effort, accepted fixes, time to a supported decision, false fixes, proof gaps and operating cost. Include sample size and incomplete attempts. The local demo gives no model-quality score and no measured ROI. A focused customer pilot should add one approved real source and one useful AI contribution, with labeled positive and negative cases, explicit execution boundaries, failure handling and an accountable reviewer. End with a concrete next owner, evidence requirement, date and stop/revise/expand decision.')
+add(s,'Agree the business problem and baseline before setting targets. Measure investigator and reviewer effort, accepted fixes, time to a supported decision, false fixes, proof gaps and operating cost. Include sample size and incomplete attempts. The local reference checks provide no model-quality score or measured ROI. A focused customer pilot should add one approved real source and one useful AI contribution, with labeled positive and negative cases, explicit execution boundaries, failure handling and an accountable reviewer. End with a concrete next owner, evidence requirement, date and stop/revise/expand decision.')
 
 s=base('Sources and evidence boundaries','Public workflow references plus an inspectable, reproducible local implementation.',16)
 refs=[('Defense Factory: operating model','https://openai.com/the-defense-factory/'),('Daybreak: broader security stack','https://openai.com/daybreak/'),('Codex Security: finding and fix evidence','https://learn.chatgpt.com/docs/security/plugin/fix-findings'),('Codex Security: access and Cloud billing','https://learn.chatgpt.com/docs/security/faq'),('Promptfoo: agent adversarial evaluation','https://www.promptfoo.dev/docs/red-team/agents/')]
 for i,(title,url) in enumerate(refs):
     y=332+i*91;s += [txt(80,y,1400,40,title,30,MINT,True),txt(80,y+42,1420,36,url.removeprefix('https://').removeprefix('www.'),24,CYAN,href=url)]
-add(s,'Use current public product documentation as the product contract, and the repository source and recorded demo as the implementation evidence. This deck contains no confidential recruiter correspondence, customer data, inferred internal roadmap or reconstructed interview question. OpenFix is an independent project. The demo imports synthetic source reports and executes real local fixture checks; it invokes no live security scan, OpenAI model, merge or deployment. The workbench screenshot is an actual generated local report. Rebuild commands and detailed evidence live in the repository, outside these presentation slides.')
+add(s,'Use current public product documentation as the product contract, and the repository source and tests as the implementation evidence. This deck contains no confidential recruiter correspondence, customer data, inferred internal roadmap or reconstructed interview question. OpenFix is an independent project. Synthetic source fixtures and trusted local checks exercise the workflow. They establish no live security-scan coverage, OpenAI model quality, merge or deployment result. Rebuild commands and detailed evidence live in the repository, outside these presentation slides.')
 
 def image_bytes(item):
     im=Image.open(item['path']).convert('RGB')
@@ -336,53 +346,54 @@ for rel in prs.slide_master.part.rels.values():
             fill.set('val',color)
         rel.target_part._blob=etree.tostring(theme,xml_declaration=True,encoding='UTF-8',standalone=True)
 prs.core_properties.title='OpenFix — From security signals to reviewed, verified change'
-prs.core_properties.author='Markus Weldon';prs.core_properties.subject='OpenFix 0.2 implemented local case workflow and recorded demo'
+prs.core_properties.author='Markus Weldon';prs.core_properties.subject='OpenFix 0.2 repository walkthrough and implementation reference'
 for scene,notes in slides: ppt_scene(prs,scene,notes)
 prs.save(OUT/'openfix-customer-workflow.pptx')
 
-mermaid = {
-    'architecture': """flowchart LR
-  A[Security file exports: SARIF GHAS Snyk Codex JSON] --> D[OpenFix local CLI]
-  B[Context exports: exact repository asset revision] --> D
-  C[Customer brief: outcome scope constraints] --> D
-  D <--> E[Persistent JSON cases + evidence + audit]
-  D --> F[Trusted local reference checks]
-  D --> G[Read-only workbench]
-  D --> H[Agent packets / optional Cursor dispatch]
-  H --> I[Committed diff + verification + exact-hash review]
-  I --> J[Separate publication and deployment controls]
-  K[Remaining: isolated workers and enterprise authentication]
-""",
-    'lifecycle': """flowchart LR
-  A[Import + correlate observations] --> B[Enrich + assess existing evidence]
-  B --> C[Validate supported subject]
-  C --> D[Accept owner priority and scope]
-  C --> Q[Disproved / inconclusive / conflict]
-  D --> E[Propose bounded change]
-  E --> F[Record committed base head and diff digest]
-  F --> G[Verify security + legitimate behavior]
-  G -->|Failed or incomplete| E
-  G --> H[Human review of exact hash]
-  H --> I[Separate publication deployment and closure]
-""",
-    'current-v1': """flowchart LR
-  A[Legacy v1: import findings] --> B[Policy routing]
-  B --> C[Optional Cursor executor]
-  C --> D[PR CI observation]
-  D --> E[Human review]
-  F[OpenFix 0.2 now defaults to persistent local case workflow]
-""",
-}
-mermaid['implemented-workflow'] = mermaid['lifecycle']
-for name, content in mermaid.items():
-    (DIAGRAMS/f'{name}.mmd').write_text(content)
+if '--deck-only' not in sys.argv:
+    mermaid = {
+        'architecture': """flowchart LR
+      A[Security file exports: SARIF GHAS Snyk Codex JSON] --> D[OpenFix local CLI]
+      B[Context exports: exact repository asset revision] --> D
+      C[Customer brief: outcome scope constraints] --> D
+      D <--> E[Persistent JSON cases + evidence + audit]
+      D --> F[Trusted local reference checks]
+      D --> G[Read-only workbench]
+      D --> H[Agent packets / optional Cursor dispatch]
+      H --> I[Committed diff + verification + exact-hash review]
+      I --> J[Separate publication and deployment controls]
+      K[Remaining: isolated workers and enterprise authentication]
+    """,
+        'lifecycle': """flowchart LR
+      A[Import + correlate observations] --> B[Enrich + assess existing evidence]
+      B --> C[Validate supported subject]
+      C --> D[Accept owner priority and scope]
+      C --> Q[Disproved / inconclusive / conflict]
+      D --> E[Propose bounded change]
+      E --> F[Record committed base head and diff digest]
+      F --> G[Verify security + legitimate behavior]
+      G -->|Failed or incomplete| E
+      G --> H[Human review of exact hash]
+      H --> I[Separate publication deployment and closure]
+    """,
+        'current-v1': """flowchart LR
+      A[Legacy v1: import findings] --> B[Policy routing]
+      B --> C[Optional Cursor executor]
+      C --> D[PR CI observation]
+      D --> E[Human review]
+      F[OpenFix 0.2 now defaults to persistent local case workflow]
+    """,
+    }
+    mermaid['implemented-workflow'] = mermaid['lifecycle']
+    for name, content in mermaid.items():
+        (DIAGRAMS/f'{name}.mmd').write_text(content)
 
-for name,scene in [('lifecycle',lifecycle()),('architecture',architecture()),('implemented-workflow',lifecycle()),('current-v1',current_v1())]:
-    render_svg(scene,DIAGRAMS/f'{name}.svg');render_png(scene,DIAGRAMS/f'{name}.png')
+    for name,scene in [('lifecycle',lifecycle()),('architecture',architecture()),('implemented-workflow',lifecycle()),('current-v1',current_v1())]:
+        render_svg(scene,DIAGRAMS/f'{name}.svg');render_png(scene,DIAGRAMS/f'{name}.png')
 render_png(slides[0][0],OUT/'cover.png')
-notes=['# OpenFix talk track\n','OpenFix 0.2 is an implemented local case workflow. This original rehearsal aid uses synthetic source reports and real local fixture checks. Start with discovery and use only the visuals that help.\n']
+notes=['# OpenFix talk track\n','OpenFix 0.2 repository walkthrough and implementation reference. Use the code, tests and diagrams to explain value and tradeoffs. This optional companion does not require running the application or a live AI service.\n']
 for i,(scene,note) in enumerate(slides,1):
     title=next(item['text'] for item in scene if item['kind']=='text' and item['size']==56)
     notes += [f'## {i:02}. {title.replace(chr(10), " ")}\n',note+'\n']
 (OUT/'talk-track.md').write_text('\n'.join(notes))
-print(f'Generated {len(slides)} slides, speaker notes, cover, and four SVG/PNG diagrams in {OUT}')
+print(f'Generated {len(slides)} slides, speaker notes and cover in {OUT}' + (' (diagram assets preserved)' if '--deck-only' in sys.argv else '; rebuilt four diagram families'))

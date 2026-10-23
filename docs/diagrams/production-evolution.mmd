@@ -1,0 +1,32 @@
+flowchart TB
+  Label["PROPOSED PRODUCTION DESIGN<br/>Not the implemented local runtime"]
+  subgraph Control["Future authenticated control plane"]
+    Identity["Customer identity and tenant boundary<br/>Authenticated actors, roles and action authorization"]
+    Policy["Case policy and execution broker<br/>Scope, tool permissions, budgets and review gates"]
+    Cases["Durable tenant-scoped case and evidence service"]
+    Scheduler["Job orchestration<br/>Idempotency, cancellation, retries and recovery"]
+  end
+  subgraph Data["Future isolated execution plane"]
+    Worker["Ephemeral repository worker<br/>Pinned checkout and limited filesystem"]
+    Broker["Credential and egress broker<br/>Short-lived least-privilege access"]
+    Agent["Approved security agent and tool set<br/>Untrusted reports and code remain data"]
+    Checks["Independent validation worker<br/>Issue-specific security and regression evidence"]
+  end
+  subgraph Integrations["Future qualified external integrations"]
+    Sources["Authenticated security and inventory connectors"]
+    Change["Customer source control and deployment systems"]
+    Runtime["Deployed-version and post-change observations"]
+    Audit["Externally retained audit and evaluation artifacts"]
+  end
+  Label --> Identity --> Policy
+  Sources --> Cases
+  Cases <--> Policy
+  Policy --> Scheduler --> Worker
+  Broker --> Worker
+  Worker --> Agent
+  Agent -->|"Proposed artifact and evidence"| Cases
+  Policy --> Checks
+  Checks -->|"Artifact-bound independent proof"| Cases
+  Identity -->|"Consequential change approval"| Change
+  Change --> Runtime --> Cases
+  Cases --> Audit
