@@ -1,14 +1,30 @@
 # OpenFix
 
-**Customer context to verified security changes.** OpenFix is evolving from a scanner-to-fix-PR CLI into a reference workflow for security investigation and controlled remediation: understand the customer, validate evidence, assign ownership, propose a bounded change, verify it, and retain human change authority.
+**Customer context to verified security changes.** OpenFix is a reference project for investigating a customer's security problem, designing a practical AI-assisted workflow, and deciding whether a controlled pilot produces useful, trustworthy results.
 
-The repository contains a working v1 CLI, a separate lifecycle prototype, and a plan for connecting them. The full workflow is not implemented yet.
+The design starts with the customer: where does work get stuck, which evidence is available, who owns the decision, and what would justify a change? Finding a vulnerability, generating a patch, and establishing that the customer should deploy it are separate decisions.
 
-| Surface | What works today | Boundary |
-| --- | --- | --- |
-| [v1 CLI](src/cli.ts) | SARIF/JSON import, policy routing, Cursor cloud remediation, agent status/resume, PR CI observation | Imports reports; does not independently validate findings or prove a fix |
-| [Lifecycle prototype](src/lifecycle/workflow.mjs) | In-memory validation, acceptance, patch identity, verification, review, rollout, revalidation and closure gates | Standalone model with caller-supplied evidence and identities; not wired into the CLI |
-| [Preparation pack](docs/prep/README.md) | Workbook, research, editable whiteboard, purple-gradient deck, diagrams and implementation plan | Reference material; Codex Security integrations, operational context and production controls remain proposed |
+## The customer workflow
+
+The target workflow makes these decisions inspectable:
+
+| Customer decision | Evidence and output |
+| --- | --- |
+| **Discover the problem** | Business consequence, stakeholders, current workflow, constraints, approved scope and a measurable outcome |
+| **Investigate the security issue** | Finding provenance, source revision, attacker control, failed control, supported impact, and relevant asset/runtime context with mapping gaps visible |
+| **Prioritize the next action** | Accountable owner, exposure and business importance, evidence quality, and a reason to investigate, remediate, defer or dismiss |
+| **Design and bound execution** | Choice of native product or integration, model/tool responsibilities, data flow, scoped identities, isolated execution and human decision points |
+| **Verify and review the change** | Exact patch and revision, original-issue evidence, legitimate behavior, regression checks, uncertainty and reviewer disposition |
+| **Decide whether to roll out** | Pilot milestones, baseline, accepted outcomes, review effort, cost, stop conditions, deployment controls and rollback owner |
+| **Explain and adapt** | A concise customer recommendation, practitioner evidence, assumptions that changed, open questions, next owner and next decision |
+
+The same engagement can end with an accepted patch, a deferred investigation, a recommendation to use an existing product, or a decision to stop. A useful result depends on the customer's problem and evidence.
+
+## One bounded case to prove
+
+Use the original, hypothetical billing-service case to connect these decisions: a possible cross-tenant lookup issue, an identified service owner, source and deployed-version evidence, a bounded remediation, and security plus legitimate-behavior checks. Exercise an inconclusive investigation and a patch that breaks legitimate use as well as a successful result. The [pilot worksheet](docs/prep/pilot-worksheet.md) defines the evidence and measures; the [repo plan](docs/prep/repo-strategy.md) defines the implementation work.
+
+This is the proposed integrated workflow. The existing CLI, standalone domain prototype and runnable instructions are described below under [implementation status](#implementation-status).
 
 ## Start here
 
@@ -22,7 +38,7 @@ The supplied customer exercise requires no presentation or advance implementatio
 
 ![Proposed OpenFix security lifecycle](docs/prep/diagrams/lifecycle.svg)
 
-*Target workflow. The status table above describes what is implemented.*
+*Target workflow. Implementation status is recorded separately below.*
 
 ## Run the lifecycle prototype
 
@@ -77,6 +93,16 @@ npm run openfix -- verify --pr https://github.com/OWNER/REPO/pull/NUMBER --check
 | `verify --pr <url>` / `verify --last` | Observe PR check status; `--checklist` also prints review guidance |
 
 Use `--verbose` with `remediate` for the full agent stream. The default board shows progress and a final summary with each agent ID and PR URL. Remediation exits nonzero if a job throws, does not finish successfully, or finishes without a PR URL.
+
+## Implementation status
+
+The running application still uses the original remediation path. The next functional increment is to connect customer context, persistent cases, evidence and decisions to that runtime. Reorganizing this README does not complete that integration.
+
+| Surface | What works today | Boundary |
+| --- | --- | --- |
+| [v1 CLI](src/cli.ts) | SARIF/JSON import, policy routing, Cursor cloud remediation, agent status/resume, PR CI observation | Imports reports; does not independently validate findings or prove a fix |
+| [Lifecycle prototype](src/lifecycle/workflow.mjs) | In-memory validation, acceptance, patch identity, verification, review, rollout, revalidation and closure gates | Standalone model with caller-supplied evidence and identities; not wired into the CLI |
+| [Preparation pack](docs/prep/README.md) | Workbook, research, editable whiteboard, purple-gradient deck, diagrams and implementation plan | Reference material; Codex Security integrations, operational context and production controls remain proposed |
 
 ## Configuration and current limits
 

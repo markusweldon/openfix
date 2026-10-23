@@ -2,6 +2,8 @@
 
 Research checked on October 22, 2026. Product capabilities, access and billing can change. This page distinguishes documented capabilities from this repository's design proposals.
 
+Endor Labs Agent Kit reference added after reviewing its public repository and output contract on October 23, 2026.
+
 | Name | Documented role | Boundary for this project |
 | --- | --- | --- |
 | **Defense Factory** | OpenAI's continuous defensive operating model and reference architecture. It joins existing tools, system context, isolated execution, orchestration, policy, ownership and verification. | Learn the process and boundaries. OpenFix can demonstrate an integration workflow; it should not claim to be OpenAI's internal system. [Official description](https://openai.com/the-defense-factory/) |
@@ -10,6 +12,7 @@ Research checked on October 22, 2026. Product capabilities, access and billing c
 | **Local Security plugin** | Code security workflows in a Codex conversation and local workbench. | Practical hands-on familiarization; distinguish it from the Cloud surface. [Plugin guide](https://learn.chatgpt.com/docs/security/plugin) |
 | **Security CLI / SDK** | Documented programmable scans and structured findings, coverage and artifacts, with runtime and access prerequisites. | A candidate integration path for a custom customer workflow. Preserve the actual contract and failure states. [CLI](https://learn.chatgpt.com/docs/security/cli/reference), [SDK](https://learn.chatgpt.com/docs/security/sdk) |
 | **Promptfoo** | Evaluation and adversarial security testing for AI applications and agents, including tool-use behavior. | Useful for evaluating OpenFix's agent or an AI customer application. Keep AI-behavior evaluation separate from proving a source-code vulnerability was fixed. [Red teaming](https://www.promptfoo.dev/docs/red-team/), [Agent testing](https://www.promptfoo.dev/docs/red-team/agents/) |
+| **Endor Labs Agent Kit** | Reusable security-task workflows for coding assistants and portable runtimes, including findings investigation, remediation planning, dependency review and approval-gated remediation. Its portable contracts specify inputs, evidence, outputs, data gaps and runtime adapter responsibilities. | A design reference for customer tasks and evidence contracts. Endor-backed workflows require their documented platform access and adapters; none is integrated into OpenFix. [Repository](https://github.com/endorlabs/endor-labs-agent-kit), [AI SAST output contract](https://github.com/endorlabs/endor-labs-agent-kit/blob/main/portable/ai-sast-remediation/output-contract.md) |
 
 ## Pro and Cloud billing
 

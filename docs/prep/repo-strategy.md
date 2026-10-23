@@ -12,6 +12,8 @@ A live customer exercise evaluates how a solution is discovered and adapted. A p
 
 Use the [exercise workbook](exercise-workbook.md) for rehearsal and the [product map](product-landscape.md) to select capabilities. The slides are optional reference material.
 
+The implementation should make a customer engagement inspectable through a discovery brief, an evidence-backed security case, a bounded execution plan, exact-change verification and review, and a pilot recommendation with owners and measures. These are the useful outputs; the CLI, evidence store and agent executor support them. The first implementation increment must connect these outputs to the running application rather than add another disconnected simulation.
+
 ## Where the repository is today
 
 | Surface | Implemented behavior | Limit |
@@ -41,6 +43,7 @@ OpenAI's Defense Factory describes a closely related continuous loop: inventory,
 - **Customer cloud/runtime tooling:** provide asset, exposure, deployed-version and observation context through an explicit mapping. Uncertain mappings remain uncertain. Infrastructure mutations require their own authority and rollback path.
 - **Promptfoo:** evaluate an AI application's or agent's behavior when that is part of the use case. For OpenFix itself, test hostile finding text, prompt injection, sensitive-data handling, tool misuse and approval bypass. This complements code-fix verification; it is a separate evidence contract.
 - **Existing Cursor integration:** retain it as an optional remediation executor. Vendor-specific execution should sit behind a common job/patch contract instead of defining the whole application.
+- **Endor Labs Agent Kit:** a useful public reference for reusable customer-task workflows, portable output contracts, evidence gaps and adapter boundaries. Its AI SAST contract separates finding verdicts, patch artifacts, approvals and action results. Learn that separation while using the customer's chosen security capabilities; an Endor integration is not implemented in OpenFix. [Repository](https://github.com/endorlabs/endor-labs-agent-kit), [portable AI SAST contract](https://github.com/endorlabs/endor-labs-agent-kit/blob/main/portable/ai-sast-remediation/output-contract.md).
 
 ## Keep, refactor, retire
 
@@ -67,9 +70,9 @@ These observed code behaviors remain implementation work; the documentation and 
 
 ### 1. Make the lifecycle the running application's record
 
-Use one typed case domain and migrate the standalone prototype into it. Add versioned persistence and CLI commands to inspect a case, record validation, assign an owner, accept/defer/dismiss, and inspect evidence. SARIF creates a candidate observation inside a case. Keep v1 data readable through an explicit migration or adapter.
+Use one typed case domain and migrate the standalone prototype into it. Store a customer brief with the problem, stakeholders, goals, approved scope, data/action constraints and baseline alongside the case. Add versioned persistence and CLI commands to inspect the brief, record validation, assign an owner, accept/defer/dismiss, and inspect evidence. SARIF creates a candidate observation inside a case. Keep v1 data readable through an explicit migration or adapter.
 
-**Acceptance:** the actual CLI operates on persistent cases. Corrupt state and invalid policy produce errors. Restarting preserves evidence and decisions. A candidate cannot silently become confirmed or authorized because its imported payload says so.
+**Acceptance:** the actual CLI operates on persistent cases and shows the customer problem, constraints, owner and next decision. Corrupt state and invalid policy produce errors. Restarting preserves evidence and decisions. A changed scope or data constraint can be recorded and reflected in the next action. A candidate cannot silently become confirmed or authorized because its imported payload says so.
 
 ### 2. Wire one real Codex Security path
 

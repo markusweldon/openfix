@@ -8,7 +8,7 @@
 - The pack includes current-v1, proposed-lifecycle, and target-architecture diagrams in SVG, PNG, and Mermaid, plus editable generation source.
 - The Excalidraw canvas contains 58 elements with validated IDs, text bindings, and bounds. A local preview was inspected; import through the Excalidraw application was not tested.
 - The preparation documents contain no recruiter email addresses, meeting links, or private recruiting messages. The practice scenario is original and hypothetical.
-- All 58 relative links across the 11 Markdown documents resolve against the repository tree and preparation files.
+- Relative links across the Markdown documents were checked against the repository tree and preparation files.
 
 ## Limits
 
