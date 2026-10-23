@@ -2,6 +2,8 @@
 """Rebuild OpenFix's original presentation and diagrams. No network required."""
 from pathlib import Path
 import math
+import base64
+from io import BytesIO
 import textwrap
 from functools import lru_cache
 from xml.sax.saxutils import escape
@@ -11,7 +13,7 @@ from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE, MSO_CONNECTOR
 from pptx.oxml.xmlchemy import OxmlElement
 from lxml import etree
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'docs/prep'
@@ -104,7 +106,7 @@ def base(title, subtitle='', number=1, label='CUSTOMER WORKFLOW / VISUAL REFEREN
          txt(70, 125, 1470, 100, title, 56, WHITE, True),
          txt(74, 226, 1430, 90, subtitle, 30, MUTED),
          line(70, 829, 1530, 829, LINE, False),
-         txt(73, 850, 1360, 28, 'Independent project • Customer exercise reference', 17, CAPTION),
+         txt(73, 850, 1360, 28, 'OpenFix 0.2 • Local implementation / recorded demo', 17, CAPTION),
          txt(1450, 845, 90, 35, f'{number:02}', 21, MINT, True)]
     return s
 
@@ -118,138 +120,136 @@ def node(x, y, w, h, num, title, sub, accent=MINT):
             txt(x+20, y+58, w-40, 45, title, 24, WHITE, True),
             txt(x+20, y+108, w-40, 66, sub, 23, MUTED)]
 
-def lifecycle(number=3):
-    s = base('The complete security loop', 'Evidence, acceptance, verification, and closure are separate decisions.', number)
+def lifecycle(number=6):
+    s = base('Each case carries evidence and decisions', 'Implemented local stages preserve evidence and require explicit decisions.', number)
     xs = [75, 460, 845, 1230]
-    data = [('01', 'Inventory + scope', 'Assets, owners, boundaries'), ('02', 'Discover / import', 'Codex Security + scanners'),
-            ('03', 'Validate', 'Confirmed / disproved / gaps'), ('04', 'Triage + accept', 'Owner, priority, decision')]
-    for x, (n,t,b) in zip(xs,data): s += node(x,320,295,175,n,t,b)
-    for a,b in zip(xs,xs[1:]): s.append(line(a+298,407,b-8,407,MINT))
-    lower = [('08','Revalidate + close','After normal change controls'), ('07','Human review','Approve the exact artifact'),
-             ('06','Verify patch','Security + legitimate behavior'), ('05','Generate patch','Bounded, isolated change')]
-    for x, (n,t,b) in zip(xs,lower): s += node(x,580,295,175,n,t,b)
-    s += [line(1377,496,1377,573,MINT)]
-    for a,b in zip(xs[1:],xs): s.append(line(a-8,667,b+302,667,MINT))
-    s += [txt(75,510,1440,55,'Early triage guides investigation. Failed or incomplete verification returns work to remediation.',24,CORAL)]
+    upper = [('01', 'Import + correlate', 'Keep each source observation'), ('02', 'Enrich + assess', 'Reuse, refresh, resolve gaps'),
+             ('03', 'Validate', 'Confirmed / disproved / uncertain'), ('04', 'Accept scope', 'Human owner + priority')]
+    lower = [('08', 'Human review', 'Approve the exact patch hash'), ('07', 'Verify patch', 'Security + legitimate behavior'),
+             ('06', 'Record exact diff', 'Committed base / head + digest'), ('05', 'Propose change', 'Packet or optional Cursor')]
+    for x,(n,t,b) in zip(xs,upper):s += node(x,320,295,182,n,t,b)
+    for a,b in zip(xs,xs[1:]):s += [line(a+298,410,b-8,410,MINT)]
+    for x,(n,t,b) in zip(xs,lower):s += node(x,580,295,182,n,t,b)
+    s += [line(1377,504,1377,573,MINT)]
+    for a,b in zip(xs[1:],xs):s += [line(a-8,670,b+302,670,MINT)]
+    s += [txt(75,518,1440,52,'Failed checks return to remediation. Merge, deployment and post-change closure remain separate.',24,CORAL)]
     return s
 
-def architecture(number=6):
-    s = base('A control plane with clear authority', 'Target architecture: integrate security capabilities without giving one process every permission.',number)
-    for y,title,sub in [(310,'Codex Security','Discovery + validation'),(455,'Scanner findings','SARIF / JSON imports'),(600,'Cloud + runtime','Asset + version mapping')]:
-        s += [rect(70,y,330,116),txt(90,y+16,290,36,title,27,WHITE,True),txt(90,y+61,290,50,sub,23,MUTED)]
-        s += [line(404,y+55,510,500,MINT)]
-    s += [rect(520,375,410,250),txt(545,402,360,48,'OpenFix',39,WHITE,True),txt(545,465,360,140,'Lifecycle policy\nEvidence + provenance\nReview + audit',29,MUTED)]
-    s += [rect(1035,310,485,126),txt(1060,328,435,42,'Isolated executor',31,WHITE,True),txt(1060,379,435,52,'Read source / bounded patch',26,MUTED)]
-    s += [rect(1035,490,485,126),txt(1060,508,435,42,'Independent verification',31,WHITE,True),txt(1060,559,435,52,'Exact artifact + proof gaps',26,MUTED)]
-    s += [line(935,442,1025,370,MINT),line(1278,434,1278,482,MINT),line(1028,550,935,565,MINT)]
-    s += [rect(520,700,410,80),txt(545,721,360,38,'Human review',29,MINT,True),line(725,631,725,690,MINT)]
-    s += [rect(1035,700,485,80),txt(1060,718,435,47,'Separate publish identity',27,WHITE,True),line(935,740,1025,740,MINT)]
+def architecture(number=5):
+    s=base('The implemented local architecture','One CLI owns durable cases; adapters and execution profiles have explicit boundaries.',number)
+    for y,title,sub in [(315,'Security exports','SARIF + tool JSON'),(465,'Context exports','Repo / asset / revision'),(615,'Customer brief','Scope + people + limits')]:
+        s += [rect(70,y,350,116),txt(90,y+16,310,38,title,28,WHITE,True),txt(90,y+63,310,47,sub,23,MUTED),line(424,y+58,510,515,MINT)]
+    s += [rect(520,370,460,280),txt(545,397,410,48,'OpenFix local CLI',36,WHITE,True),
+          txt(545,467,410,162,'Persistent JSON cases\nEvidence + assessment\nDecision and patch gates\nHash-chained audit',28,MUTED)]
+    for y,title,sub in [(315,'Reference checks','Trusted local tenant profile'),(465,'Read-only workbench','Cases, provenance, gaps, gates'),(615,'Agent handoff','Task packets / optional Cursor')]:
+        s += [rect(1080,y,450,116),txt(1100,y+16,410,38,title,29,WHITE,True),txt(1100,y+63,410,47,sub,24,MUTED),line(984,515,1070,y+58,MINT)]
+    s += [txt(75,771,1440,38,'Local processes and actor labels are implemented. Isolated workers and enterprise authentication are not.',24,CORAL)]
     return s
 
 def current_v1():
-    s=base('Current OpenFix v1', 'Implemented path: imported scanner findings to Cursor remediation and downstream PR checks.', 1, 'CURRENT IMPLEMENTATION')
+    s=base('Legacy Cursor path (v1)','Retained execution integration; OpenFix 0.2 now defaults to persistent local cases.',1,'LEGACY EXECUTOR REFERENCE')
     labels=[('01','Import findings','SARIF / JSON'),('02','Route by policy','Fix / human / noise'),('03','Cursor agent','Generate remediation PR'),('04','Observe PR CI','Tests + scanner jobs'),('05','Human review','Normal merge process')]
     for i,(n,t,b) in enumerate(labels):
         x=65+i*310;s += node(x,350,270,195,n,t,b)
         if i<4:s += [line(x+275,447,x+300,447,MINT)]
-    s += [rect(75,620,1450,140),txt(100,643,1390,45,'The refactor adds explicit evidence and decision state across the lifecycle.',29,MINT,True),txt(100,704,1390,40,'Discovery / validation / acceptance / exact-patch verification / review / revalidation / closure',23,MUTED)]
+    s += [rect(75,620,1450,140),txt(100,643,1390,45,'OpenFix 0.2 adds durable cases, reusable evidence and explicit change gates.',29,MINT,True),txt(100,704,1390,40,'Cursor dispatch is optional. A returned patch still needs exact-artifact verification and human review.',25,MUTED)]
     return s
 
-slides = []
-def add(scene, notes): slides.append((scene, notes))
+def rows(scene, values, y=330, step=90, left=370, body_size=29):
+    for i,(a,b) in enumerate(values):
+        yy=y+i*step
+        scene += [rect(75,yy,1450,step-12),txt(98,yy+17,left-28,step-22,a,body_size,MINT,True),txt(105+left,yy+17,1385-left,step-22,b,body_size,WHITE)]
+    return scene
 
-s = base('From security signals\nto reviewed, verified change', 'A customer workflow for OpenFix\nMarkus Weldon • Independent architecture proposal and prototype', 1)
-s[3]['h']=160; s[4]['y']=312; s[4]['h']=90
-for i,(title,sub) in enumerate([('UNDERSTAND','Scope the customer problem'),('PROVE','Validate evidence and behavior'),('FIX','Review the exact change')]):
-    s += card(75+i*510,485,470,280,f'0{i+1}',title,sub,body_size=30)
-add(s,'Open with the customer outcome. Explain that this is an independent project, with a tested lifecycle prototype and a proposed integration architecture. Ask permission to use a visual only if useful; a discovery conversation does not need a full presentation.')
+def picture(x,y,w,h,path,crop=None):
+    return dict(kind='image',x=x,y=y,w=w,h=h,path=str(path),crop=crop)
 
-s=base('Start with the customer outcome','Let the provided scenario determine the scope. The billing example is only a practice vignette.',2)
-for i,(k,t,b) in enumerate([('Problem','Where is work stuck?','Detection noise, investigation, ownership, patch creation, or review?'),('Scope','One service, one issue class','Identify the security owner, service owner, approved data, and success criteria.'),('Value','Measure accepted fixes','Compare end-to-end effort, verified outcomes, review burden, and failure rate.')]):
+slides=[]
+def add(scene,notes):slides.append((scene,notes))
+
+s=base('Evidence to action.','OpenFix 0.2 • A local security-case workflow\nMarkus Weldon • Independent implementation and recorded demo',1,'FINDINGS INTELLIGENCE')
+s[3]['h']=130;s[4]['y']=276;s[4]['h']=100
+for i,(title,body) in enumerate([('PRESERVE','What security tools already know'),('INVESTIGATE','The gaps that change a decision'),('VERIFY','The exact change and its behavior')]):
+    s += card(75+i*510,445,470,320,f'0{i+1}',title,body,body_size=32)
+add(s,'OpenFix is now an implemented local workflow, not a standalone lifecycle prototype. The default CLI persists cases, imports evidence, assesses context, validates supported cases, records acceptance, binds a committed diff, verifies it and records human review. The recorded demo uses synthetic reports and actual local fixture probes. It makes no model call, live scanner call, merge or deployment. Use these visuals only if they help the customer conversation; the exercise requires no prepared presentation.')
+
+s=base('Preserve knowledge. Investigate the gaps.','A new finding should arrive with the producer context that already exists.',2)
+for i,(k,t,b) in enumerate([('Keep','Upstream evidence','Retain source records, enrichment, provenance and coverage gaps.'),('Assess','Decision-changing gaps','Check subject, freshness and conflicts before planning more work.'),('Act','Explicit authority','Separate suggested priority, accepted scope, patch proof and review.')]):
     s += card(75+i*510,335,470,440,k,t,b)
-add(s,'Ask what hurts and who owns the workflow before discussing products. Establish current effort and remediation time. The billing scenario is invented for practice and should never be presented as the actual customer scenario. Avoid invented ROI numbers.')
+add(s,'Start by asking where customer effort is lost: finding investigation, ownership, acceptance, remediation or review. Security tools may already provide reachability, validation, exploitability, ownership, runtime and code evidence. OpenFix preserves that material and plans around missing or conflicting evidence rather than blindly rerunning every stage. A priority suggestion does not grant execution authority. Producer assertions are not automatically independent proof.')
 
-add(lifecycle(3),'Describe the workflow as a design rather than a rigid OpenAI product sequence. Establish threat context, discover or import candidates, validate, and obtain acceptance before remediation. Early triage can select expensive investigations. Verify the exact patch, review it, use normal merge and deployment controls, then revalidate and close explicitly. Negative and uncertain outcomes are first-class states.')
+s=base('Many observations, one persistent case','Implemented adapters normalize source exports while retaining their original evidence.',3)
+rows(s,[('SARIF','Rules, locations, tool identity and result properties'),('GHAS + Snyk','Code-scanning alerts and dependency findings'),('Codex Security JSON','Scan findings, manifest, coverage and deferred surfaces'),('Case correlation','Link matching observations; retain each source record'),('Durable local state','JSON records, atomic writes, exclusive lock and audit chain')],y=325,step=90,left=355,body_size=28)
+add(s,'Adapters import local SARIF, GitHub code-scanning exports, Snyk JSON and supported Codex Security scan JSON, along with a generic finding envelope. These are file adapters, not live service connectors. Original observations remain linked to artifact digests and source identity. Correlation is deterministic and conservative; it is not a universal semantic deduplication engine. The local store uses atomic replacement, a writer lock and a hash-chained event audit with a state checkpoint. These mechanisms do not provide authenticated multi-tenant storage or an external tamper-proof ledger.')
 
-s=base('Keep these decisions separate','A status label should express the evidence and authority actually present.',4)
-rows=[('Candidate','A hypothesis worth investigating'),('Confirmed','Evidence supports the security finding'),('Accepted','A reviewer chooses owner, priority, and remediation scope'),('Verified patch','Agreed checks pass for the exact artifact'),('Closed','Change controls and post-change evidence support closure')]
-for i,(a,b) in enumerate(rows):
-    y=324+i*88;s += [rect(75,y,1450,70),txt(100,y+16,330,46,a,30,MINT,True),txt(450,y+16,1040,46,b,30,WHITE)]
-add(s,'Confidence is separate from severity and business priority. A scanner result or model claim is a candidate until evidence supports it. An accepted finding is a human prioritization and scope decision. Patch creation does not establish verification. Verification does not automatically close a finding.')
+s=base('Reuse evidence and preserve its authority','The evidence plan says what to reuse, refresh, collect or resolve.',4)
+rows(s,[('Subject','Repository, revision and asset must match the case'),('Freshness','Use collection time / expiry; flag stale or unknown dates'),('Provenance','Keep producer, authority, source reference and artifact digest'),('Conflicts','Retain competing current claims; ask for a decision'),('Validation','Producer verdicts stay assertions until explicitly reviewed')],y=325,step=90,left=340,body_size=29)
+add(s,'Evidence records preserve upstream assertions separately from local evidence and explicit reviewed adoption of external validation. Context joins require the exact repository, asset and revision. Subject-mismatched evidence cannot silently change current context. The default freshness window is seven days, with explicit expiry supported; missing dates remain unknown and future timestamps are flagged. The freshest record per origin, producer and kind contributes to current assessment. Fresh contradictions remain visible instead of being overwritten by source precedence. The plan can reuse with provenance, refresh or verify, collect, resolve a conflict, or review upstream validation. A new or expired context record invalidates accepted scope where required.')
 
-s=base('From a signal to an attack path','Hypothetical issue: invoice lookup authenticates a caller but omits tenant ownership.',5)
-for i,(t,b) in enumerate([('Attacker input','Invoice identifier'),('Control failure','Lookup omits tenant predicate'),('Supported impact','Another tenant invoice is returned')]):
-    s += node(75+i*510,330,470,190,f'0{i+1}',t,b)
-    if i<2:s += [line(550+i*510,425,575+i*510,425,MINT)]
-s += [rect(75,575,1450,192),txt(100,597,1390,45,'Context informs priority; the code path establishes the flaw.',30,MINT,True),txt(100,654,1390,92,'Cloud exposure: internet-facing asset. Runtime: requests correlated to a known version.\nMapping gaps and unverified exploitation remain visible.',30,MUTED)]
-add(s,'Walk through source, failed control, sink, and supported impact. Explain which evidence is executed and which is source-based. Cloud exposure alone is not a vulnerability, and runtime logs must map to the relevant asset and version. Preserve ambiguity rather than escalating a claim beyond its evidence.')
+add(architecture(5),'This diagram describes the implemented local architecture. The default src/openfix.mjs CLI calls the workflow modules and persistent store. File adapters supply findings and context, and a customer brief records goals and boundaries. The same stored cases feed assessment, the read-only HTML workbench and agent task packets. The built-in tenant-isolation profile runs trusted local fixture code only after explicit execution authorization. Its supported subject is CWE-639 at src/invoices.mjs:3; mismatched findings remain inconclusive. Optional Cursor dispatch calls the retained executor bridge. Neither local child-process bounds nor named actor labels are a production isolation or identity boundary. No live Codex Security scan is invoked by the demo.')
 
-add(architecture(6),'OpenFix owns the lifecycle policy and evidence record. Codex Security can supply discovery and validation; existing scanners remain useful inputs. Cloud and runtime systems contribute approved context. An isolated executor proposes a bounded patch. Verification, human review, and publication use separate authority. This is the target architecture, not a statement that these integrations are all implemented.')
+add(lifecycle(6),'The path is implemented through the default CLI. Imported evidence is assessed before additional investigation. Validation can confirm, disprove or remain inconclusive. Acceptance records owner, priority, rationale and context. A committed diff is then recorded with exact base, head and digest. A different actor runs the approved verification profile and a reviewer approves the exact patch hash. New context or a replacement patch can invalidate earlier decisions. Review does not merge or deploy. Rollout and closure commands require separate change records, exact deployed revision and post-change evidence; the demo stops at approved_for_change.')
 
-s=base('A useful workflow handles uncertainty','Show the branches as deliberately as the successful fix.',7)
-for i,(k,t,b,c) in enumerate([('Evidence supports it','Confirmed','Accept for a bounded remediation after reviewing scope and impact.',MINT),('A control already holds','Disproved','Record the evidence and dismissal reason. Do not spend a patch run.',MINT),('Proof is incomplete','Needs context','Name the missing assumption, test, version mapping, or permission.',CORAL)]):
-    s += card(75+i*510,335,470,440,k,t,b,c)
-add(s,'A false positive or incomplete validation is a useful output. Source-based analysis can support a finding without runtime reproduction, but execution-dependent uncertainty must remain open. A completed scan can have deferred surfaces and coverage gaps; completion and completeness are different measures.')
+s=base('A workbench over the actual case store','Recorded local UI: source observations, next decision, evidence and change gates.',7)
+s += [rect(70,311,987,493),picture(76,317,975,481,ROOT/'docs/demo/workbench-overview.png',(0,.23,1,1)),
+      rect(1090,311,440,493),txt(1115,337,390,45,'One review surface',31,MINT,True),
+      txt(1115,407,390,290,'4 cases / 5 observations.\n\nEvidence, conflicts and the next decision.\n\nRead-only report.\nExplicit CLI actions.',29,MUTED)]
+add(s,'This is the actual generated workbench, not a design mockup. It reads the durable workflow store, presents case assessment, source observations, customer context, validation and change gates, an evidence plan, a provenance ledger and audit history. The slide crops the screenshot to the main workspace; open the HTML or full screenshot for detailed inspection. The interface is read-only. Suggested urgency is separate from the priority accepted by a reviewer. The recorded-demo banner states that reports are synthetic and local validation checks are real; there is no live scanner, model call or deployment.')
 
-s=base('Choose the right capability','Start with native capabilities, then add the customer integration that is actually missing.',8)
-rows=[('Defense Factory','Continuous operating model and reference architecture'),('Daybreak','Broader governed cyber-defense stack'),('Codex Security','Code discovery, finding evidence, validation and fixes'),('Promptfoo','AI application evaluation and adversarial behavior testing'),('OpenFix proposal','Customer context, evidence, ownership and change workflow')]
-for i,(a,b) in enumerate(rows):
-    y=324+i*88;s += [rect(75,y,1450,70),txt(100,y+16,360,46,a,30,MINT,True),txt(485,y+16,1000,46,b,30,WHITE)]
-add(s,'Defense Factory describes an operating model; Daybreak is broader than one product. Codex Security Cloud and local workflows have distinct setup and contracts. Promptfoo evaluates AI behavior, including agent tool use; it complements code-security analysis. OpenFix should add a useful customer integration rather than duplicate those products. Sources: https://openai.com/the-defense-factory/ ; https://openai.com/daybreak/ ; https://learn.chatgpt.com/docs/security/setup ; https://www.promptfoo.dev/docs/red-team/agents/ . OpenAI announced a Promptfoo acquisition agreement; do not infer a completed product integration or an interviewer biography from it.')
+s=base('The demo deliberately keeps four outcomes','Five synthetic observations become four cases; uncertainty stays visible.',8)
+rows(s,[('Vulnerable lookup','Runtime confirmed → accepted → verified patch → reviewed'),('Protected lookup','Cross-tenant access blocked → disproved → dismissed'),('Dependency issue','No installed validation profile → inconclusive'),('Cloud context','Conflicting service owners → resolve the conflict')],y=333,step=100,left=355,body_size=29)
+s += [txt(80,756,1430,48,'Four completed tenant probes + one unavailable-profile attempt. No live scan, model call, merge or deployment.',25,CYAN)]
+add(s,'The synthetic reports produce five observations and four correlated cases. The tenant-isolation profile executes four times: vulnerable baseline, protected baseline, deliberately broken patch and corrected patch. The dependency profile is unavailable, creating a fifth attempted check with an incomplete outcome, not a successful reproduction. The protected case is disproved and dismissed. The cloud owner contradiction remains unresolved. Report the denominator honestly: these reference checks demonstrate workflow mechanics and negative cases, not model performance, generalized vulnerability coverage or a customer ROI result.')
 
-s=base('Controls travel with the workflow','Assign authority to each action and bind approval to a specific artifact.',9)
-rows=[('Read / investigate','Approved source and data; scoped execution'),('Propose a patch','Accepted finding; bounded isolated workspace'),('Verify','Independent result at the exact changed revision'),('Publish / merge','Separate credentials; reviewer and branch protection'),('Deploy / close','Normal change process; post-change evidence')]
-for i,(a,b) in enumerate(rows):
-    y=324+i*88;s += [rect(75,y,1450,70),txt(100,y+16,360,46,a,30,MINT,True),txt(485,y+16,1000,46,b,30,WHITE)]
-add(s,'Distinguish a local command sandbox from isolated execution of arbitrary customer code. Discuss least privilege, data handling, egress, immutable verification inputs, cancellation, auditability, and rollback in terms of the actual customer constraints. Actor labels in the prototype are caller assertions, not authenticated enterprise RBAC.')
+s=base('A patch can block the attack and still fail','Verification checks the security claim and legitimate behavior on the same exact artifact.',9)
+for i,(k,t,b,c) in enumerate([('Deliberately bad fix','Deny all requests','Security check: passed\nLegitimate behavior: failed\n\nVerification fails.\nHuman approval is blocked.',CORAL),('Corrected committed diff','Enforce tenant ownership','Security check: passed\nLegitimate behavior: passed\n\nVerification passes.\nReviewer approves the hash.',CYAN)]):
+    s += card(75+i*750,335,700,440,k,t,b,c,body_size=31)
+add(s,'The reference fixture initially returns another tenant invoice. The first committed patch denies every request. It blocks the attacker but also breaks the legitimate owning tenant, so regression verification fails and the workflow rejects an approval attempt. The corrected committed patch adds the tenant predicate and preserves the legitimate lookup. Both checks pass and the reviewer approves that exact hash. The patch engine is a deterministic reference code edit in this demo; do not describe it as a model-generated fix. This is evidence of an important evaluation property: security-only success cannot justify a broken product.')
 
-s=base('A small pilot with a real decision','Agree the baseline, evidence, owners, and exit criteria before expanding.',10)
-for i,(k,t,b) in enumerate([('Baseline','Current workflow','Approved data, labeled examples, reviewer standards, investigator effort.'),('Evaluate','Positive + negative cases','Verified acceptance, false fixes, proof gaps, latency, cost, review time.'),('Decide','Expand, revise, or stop','One service and issue class first. Define the next owner and decision date.')]):
-    s += card(75+i*510,335,470,440,k,t,b)
-add(s,'Propose a bounded pilot rather than broad autonomous rollout. Include a false positive, missing context, a broken build, a patch that denies all legitimate requests, and a timeout. Agree numerical targets after measuring the baseline. Report sample size and failed attempts; avoid treating replay quality as model quality.')
+s=base('Approval belongs to an exact change','A plausible fix description is insufficient evidence for publication.',10)
+rows(s,[('Accepted scope','Owner, priority, rationale and context recorded'),('Artifact identity','Real git diff: committed base + head + SHA-256'),('Independent check','Verifier label differs from the patch author'),('Review gate','Passing security + regression checks, exact hash'),('After review','Normal publication, merge and deployment controls')],y=325,step=90,left=360,body_size=29)
+add(s,'Patch recording binds a real git diff from the recorded base to a committed head, hashes the binary diff and rejects more than twenty changed files. Verification checks the repository snapshot, exact head and digest before executing the selected profile. The reference verifier permits only invoice-file changes; changes beyond that surface remain incomplete. Missing prerequisites or an artifact mismatch produce an incomplete result rather than success. A local verifier label must differ from the author label. Review requires passing independent verification and the exact patch hash. Labels are audit assertions supplied by the operator, not authenticated identities or a separation-of-duties enforcement boundary. Merge, deployment and post-change closure remain separate decisions.')
 
-s=base('What exists, and what changes','The repository should make implementation status easy to inspect.',11)
-for i,(k,t,b,c) in enumerate([('Current v1','Remediation orchestrator','SARIF / JSON ingestion, policy routing, Cursor agents, PR CI observation.',MUTED),('Tested prototype','Lifecycle decision gates','Validation, triage, patch identity, verification, review, revalidation, closure.',MINT),('Proposed integration','Full customer workflow','Codex Security adapter, isolated jobs, durable evidence, workbench, publication.',CORAL)]):
-    s += card(75+i*510,335,470,440,k,t,b,c)
-add(s,'Be candid about what is real. The original code is a useful remediation adapter. The new lifecycle domain and its tests are executable. The complete production integration and workbench are proposed, not delivered. Explain the migration in stages rather than implying that a diagram proves functionality.')
+s=base('Give agents a bounded security case','Implemented handoffs preserve evidence, scope and expected outputs.',11)
+for i,(k,t,b) in enumerate([('Default','Portable task packet','Export case.json and instructions with provenance, gaps and permitted actions.'),('Native guidance','.agents skills','Use the approved security workflow; treat findings and tool output as untrusted data.'),('Optional executor','Cursor dispatch','Actor + execution + draft-PR authorization. Verify and review the returned patch.')]):
+    s += card(75+i*510,335,470,440,k,t,b,body_size=31)
+add(s,'The agent packet carries the case subject, customer brief, observations, current evidence, gaps, action boundary and expected output contract. Instructions distinguish producer assertions, source analysis and runtime proof, and treat code comments, finding text and tool results as data rather than instructions. Packets are handoff artifacts; they do not themselves invoke an OpenAI model. The repository includes .agents skills for case investigation and patch verification. Optional Cursor dispatch reuses the existing executor, requires accepted scope, --execute, --publish-draft and a named --actor, and is not exercised in the recorded demo. Returned PRs still need exact-patch import, verification and review.')
 
-s=base('Separate access, usage, and deployment','Pro familiarization does not establish that every Security surface uses included allowance.',12)
-for i,(k,t,b) in enumerate([('Explore locally','ChatGPT sign-in','Learn the native finding, evidence and patch workflow. Confirm access and limits.'),('Cloud scans','Separate billing','Token billing applies to new Cloud scans. Eligible scanning credits may apply; check settings.'),('Customer rollout','Operating requirements','Choose identities, data handling, isolation, budgets, verification and review controls.')]):
-    s += card(75+i*510,335,470,440,k,t,b)
-add(s,'Local Codex supports ChatGPT sign-in. The current Cloud FAQ excludes newly configured Cloud scans from included plan allowance and describes separate token charges and possible credits. Confirm account-specific settings. Source: https://learn.chatgpt.com/docs/security/faq . No live Codex Security result is claimed by this repository.')
+s=base('Use native security capabilities','OpenFix complements security capabilities with customer evidence and change decisions.',12)
+rows(s,[('Defense Factory','Continuous operating model and reference architecture'),('Daybreak','Broader governed cyber-defense capability stack'),('Codex Security','Native code investigation, evidence, validation and fixes'),('Promptfoo','AI application and agent adversarial evaluation'),('OpenFix 0.2','Local evidence reuse, customer context and exact-change gates')],y=325,step=90,left=355,body_size=28)
+add(s,'This alignment uses public descriptions, not a claim about internal OpenAI architecture or an official integration. Start with native Codex Security functionality and use the documented contract of the customer environment. OpenFix imports supported Codex scan JSON but does not run a live scan in the demo. Defense Factory describes a continuous operating approach, and Daybreak encompasses a wider stack. Promptfoo helps evaluate AI applications and adversarial agent behavior; it is relevant when a model-driven step exists. Do not claim Promptfoo execution in this demo. ChatGPT Pro familiarization does not establish that every Cloud scan is included; confirm product access and billing separately.')
 
-s=base('Leave with a concrete recommendation','A good customer conversation ends with an owned next step and visible uncertainty.',13)
-s += [txt(80,340,1430,90,'One service. One issue class. One accountable reviewer.',44,MINT,True)]
-for i,(t,b) in enumerate([('Agree the scope','Problem, assets, data, authority'),('Define the proof','Original issue + legitimate behavior'),('Choose the decision','Success measures + expansion gate')]):
-    s += card(75+i*510,490,470,280,f'0{i+1}',t,b,body_size=30)
-add(s,'Summarize your assumptions and the customer decision you recommend. State the inputs you need, the owner, the expected evidence, the open limitations, and the next decision date. Invite correction. Adapt the proposed workflow to the customer rather than forcing every use case into a prebuilt pipeline.')
+s=base('What remains for production','Keep the implemented controls and remaining boundaries visible.',13)
+for i,(k,t,b,c) in enumerate([('Implemented','Inspectable local controls','Persistent cases, exact joins, freshness checks, artifact binding, named actors and audit history.',MINT),('Still required','Production boundaries','Authenticated identities, isolated workers, egress and secret controls, durable service storage.',CORAL),('Still to prove','Real integrations + scale','Live connectors, model behavior, broader validators, customer-scale evals and operational recovery.',CYAN)]):
+    s += card(75+i*510,335,470,440,k,t,b,c,body_size=31)
+add(s,'The trusted local reference profile is a bounded child process, not a container, VM or network sandbox for arbitrary customer code. Actor labels do not establish authentication, RBAC or enterprise separation of duties. Hash-chain checking and local file permissions are useful inspectability measures, not externally anchored audit guarantees. The read-only HTML workbench is local and not an authenticated hosted service. File adapters and optional dispatch do not imply live scanner integrations. Before a customer rollout, agree approved data, identity, execution isolation, egress, credentials, retention, cancellation, recovery, observability and budget controls. Production publication authority needs a distinct design.')
 
-s=base('Sources and practical boundaries','Public product documentation supports the workflow; the architecture and scenario are independent.',14)
-refs=[('Defense Factory: process and architecture','https://openai.com/the-defense-factory/'),('Daybreak: broader capability stack','https://openai.com/daybreak/'),('Cloud setup and billing boundaries','https://learn.chatgpt.com/docs/security/faq'),('Finding and fix evidence','https://learn.chatgpt.com/docs/security/plugin/fix-findings'),('Promptfoo: adversarial agent evaluation','https://www.promptfoo.dev/docs/red-team/agents/')]
-for i,(title,url) in enumerate(refs):
-    y=345+i*91;s += [txt(80,y,1400,40,title,30,MINT,True),txt(80,y+42,1420,36,url.removeprefix('https://').removeprefix('www.'),24,CYAN,href=url)]
-add(s,'Use the linked public documentation as the current contract. This deck contains no confidential recruiter messages, customer data, inferred internal roadmaps, or reconstructed interview questions. It is a rehearsal and architecture aid, not a required presentation or evidence of a deployed service.')
-
-s=base('The repo\u2019s next three increments','Make one customer workflow operational before adding a broad product surface.',15)
-for i,(k,t,b) in enumerate([('01 / Integrate','Persistent security cases','Wire the case lifecycle into the actual CLI. Preserve evidence, revisions, owners and decisions.'),('02 / Prove','One real capability path','Use a documented Codex Security path. Verify one bounded change and handle failure honestly.'),('03 / Evaluate','Useful review and evidence','Add a workbench over real state. Evaluate agent behavior when needed; expand from measured proof.')]):
-    s += card(75+i*510,335,470,440,k,t,b)
-add(s,'The next implementation work is integrating the lifecycle into the actual runtime, not adding another disconnected example. First correct readiness semantics for pending/skipped checks, policy errors and corrupt state. Then wire one real capability path with recorded evidence. Keep Cursor behind an executor adapter. Cloud/runtime context and Promptfoo evaluation should be added when they serve the customer use case. The detailed plan and acceptance criteria are in docs/prep/repo-strategy.md; these increments are proposed, not complete.')
-
-s=base('Lead an adaptive working session','No presentation is required. Use a visual only when it helps the customer conversation.',16)
-steps=[('01','Frame the problem','Outcome, stakeholders, bottleneck, constraints'),('02','Map the workflow','Assets, tools, versions, evidence and handoffs'),('03','Choose and bound','Smallest useful AI step + identity / data boundaries'),('04','Define a pilot','Proof, baseline, owners, milestones and stop criteria'),('05','Adapt and recommend','Revise assumptions; explain the next decision')]
+s=base('Lead a customer working session','The provided scenario sets the scope. No presentation or advance work is required.',14)
+steps=[('01','Discover the problem','Outcome, people, bottleneck, constraints'),('02','Map the evidence','Existing tools, assets, revisions and trusted context'),('03','Choose a useful AI step','Native capability, integration gap and authority'),('04','Plan proof and rollout','Pilot, failure cases, owners and decision gate'),('05','Adapt in real time','Restate changed assumptions and revise the plan')]
 for i,(n,t,b) in enumerate(steps):
-    y=317+i*91;s += [txt(80,y+8,70,55,n,34,MINT,True),txt(175,y+8,570,55,t,32,WHITE,True),txt(770,y+9,720,78,b,30,MUTED)]
-add(s,'The supplied exercise assesses discovery, cybersecurity judgment, architecture, execution planning, evidence, business impact, communication and adaptability. Practice these decisions without relying on a running app. Do not assume the scenario is the billing example. If the customer changes a data, identity, tool or rollout constraint, restate the assumption and revise the relevant design. The editable whiteboard and exercise workbook provide a flexible scaffold, not a scripted answer.')
+    y=325+i*90;s += [txt(80,y+8,70,55,n,34,MINT,True),txt(175,y+8,570,55,t,32,WHITE,True),txt(770,y+9,720,78,b,30,MUTED)]
+add(s,'Treat this as a collaborative customer exercise, not a product pitch or a requirement to demo OpenFix. Ask clarifying questions, state assumptions and explain tradeoffs. Discover the current workflow, stakeholders, approved data, constraints and desired business outcome. If new information changes a tool, identity, data or deployment assumption, revise the affected architecture and pilot instead of defending the original design. Use the whiteboard only when it helps. The billing example is an invented practice case and must not be assumed to match the provided customer scenario.')
 
-# The core canvases come first; implementation details and examples are references.
-slides = [slides[i] for i in [0,1,7,2,5,8,9,15,12,10,14,3,4,6,11,13]]
-for number,(scene,_) in enumerate(slides,1):
-    for item in scene:
-        if item['kind']=='text' and item.get('x')==1450 and item.get('y')==845:
-            item['text']=f'{number:02}'
+s=base('A pilot should lead to an operating decision','One service, one issue class and one accountable reviewer; measure the baseline first.',15)
+for i,(k,t,b) in enumerate([('Baseline','Know today’s work','Investigation effort, review time, accepted outcomes, delay and existing controls.'),('Evaluate','Include failure paths','Valid, disproved, stale, conflicting and missing proof. Bad fixes, cost and latency.'),('Decide','Expand, revise or stop','Agree evidence, owners, milestones and limits. Expand one scope dimension at a time.')]):
+    s += card(75+i*510,335,470,440,k,t,b,body_size=31)
+add(s,'Agree the business problem and baseline before setting targets. Measure investigator and reviewer effort, accepted fixes, time to a supported decision, false fixes, proof gaps and operating cost. Include sample size and incomplete attempts. The local demo gives no model-quality score and no measured ROI. A focused customer pilot should add one approved real source and one useful AI contribution, with labeled positive and negative cases, explicit execution boundaries, failure handling and an accountable reviewer. End with a concrete next owner, evidence requirement, date and stop/revise/expand decision.')
+
+s=base('Sources and evidence boundaries','Public workflow references plus an inspectable, reproducible local implementation.',16)
+refs=[('Defense Factory: operating model','https://openai.com/the-defense-factory/'),('Daybreak: broader security stack','https://openai.com/daybreak/'),('Codex Security: finding and fix evidence','https://learn.chatgpt.com/docs/security/plugin/fix-findings'),('Codex Security: access and Cloud billing','https://learn.chatgpt.com/docs/security/faq'),('Promptfoo: agent adversarial evaluation','https://www.promptfoo.dev/docs/red-team/agents/')]
+for i,(title,url) in enumerate(refs):
+    y=332+i*91;s += [txt(80,y,1400,40,title,30,MINT,True),txt(80,y+42,1420,36,url.removeprefix('https://').removeprefix('www.'),24,CYAN,href=url)]
+add(s,'Use current public product documentation as the product contract, and the repository source and recorded demo as the implementation evidence. This deck contains no confidential recruiter correspondence, customer data, inferred internal roadmap or reconstructed interview question. OpenFix is an independent project. The demo imports synthetic source reports and executes real local fixture checks; it invokes no live security scan, OpenAI model, merge or deployment. The workbench screenshot is an actual generated local report. Rebuild commands and detailed evidence live in the repository, outside these presentation slides.')
+
+def image_bytes(item):
+    im=Image.open(item['path']).convert('RGB')
+    if item.get('crop'):
+        x,y,xx,yy=item['crop'];im=im.crop((round(x*im.width),round(y*im.height),round(xx*im.width),round(yy*im.height)))
+    im=ImageOps.pad(im,(round(item['w']),round(item['h'])),color='#'+CARD,centering=(.5,.5))
+    out=BytesIO();im.save(out,format='PNG');return out.getvalue()
 
 def render_svg(scene, dest):
-    out=['<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img">', '<title>OpenFix architecture proposal</title>', f'<defs><linearGradient id="synthwave-background" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#{BG}"/><stop offset="1" stop-color="#{BG_END}"/></linearGradient><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#{CYAN}"/></marker></defs>']
+    out=['<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img">', '<title>OpenFix local workflow</title>', f'<defs><linearGradient id="synthwave-background" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#{BG}"/><stop offset="1" stop-color="#{BG_END}"/></linearGradient><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#{CYAN}"/></marker></defs>']
     for item in scene:
         if item['kind']=='rect':
             if item['w']==1600 and item['h']==900:
@@ -259,6 +259,9 @@ def render_svg(scene, dest):
         elif item['kind']=='line':
             marker=' marker-end="url(#arrow)"' if item['arrow'] else ''
             out.append(f'<line x1="{item["x1"]}" y1="{item["y1"]}" x2="{item["x2"]}" y2="{item["y2"]}" stroke="#{item["color"]}" stroke-width="3"{marker}/>')
+        elif item['kind']=='image':
+            data=base64.b64encode(image_bytes(item)).decode()
+            out.append(f'<image x="{item["x"]}" y="{item["y"]}" width="{item["w"]}" height="{item["h"]}" href="data:image/png;base64,{data}"/>')
         else:
             family='DejaVu Sans Mono,monospace' if item['mono'] else 'DejaVu Sans,Arial,sans-serif'
             for n,row in enumerate(item['text'].split('\n')):
@@ -276,6 +279,8 @@ def render_png(scene, dest):
             x,y,xx,yy=item['x1'],item['y1'],item['x2'],item['y2'];d.line((x,y,xx,yy),fill='#'+item['color'],width=3)
             if item['arrow']:
                 angle=math.atan2(yy-y,xx-x);pts=[(xx,yy),(xx-15*math.cos(angle-.4),yy-15*math.sin(angle-.4)),(xx-15*math.cos(angle+.4),yy-15*math.sin(angle+.4))];d.polygon(pts,fill='#'+item['color'])
+        elif item['kind']=='image':
+            im.paste(Image.open(BytesIO(image_bytes(item))),(round(item['x']),round(item['y'])))
         else:
             font=ImageFont.truetype(MONO if item['mono'] else BOLD if item['bold'] else FONT,item['size'])
             for n,row in enumerate(item['text'].split('\n')): d.text((item['x'],item['y']+n*item['size']*1.26),row,fill='#'+item['color'],font=font,anchor='lt')
@@ -301,6 +306,8 @@ def ppt_scene(prs, scene, notes):
                 angle=math.degrees(math.atan2(item['y2']-item['y1'],item['x2']-item['x1']))
                 tip=slide.shapes.add_shape(MSO_SHAPE.ISOSCELES_TRIANGLE, Inches(item['x2']/100-.07),Inches(item['y2']/100-.07),Inches(.14),Inches(.14))
                 tip.rotation=angle+90;tip.fill.solid();tip.fill.fore_color.rgb=RGBColor.from_string(item['color']);tip.line.fill.background()
+        elif item['kind']=='image':
+            slide.shapes.add_picture(BytesIO(image_bytes(item)),Inches(item['x']/100),Inches(item['y']/100),width=Inches(item['w']/100),height=Inches(item['h']/100))
         else:
             shape=slide.shapes.add_textbox(Inches(item['x']/100),Inches(item['y']/100),Inches(item['w']/100),Inches(item['h']/100))
             frame=shape.text_frame;frame.word_wrap=True
@@ -329,16 +336,53 @@ for rel in prs.slide_master.part.rels.values():
             fill.set('val',color)
         rel.target_part._blob=etree.tostring(theme,xml_declaration=True,encoding='UTF-8',standalone=True)
 prs.core_properties.title='OpenFix — From security signals to reviewed, verified change'
-prs.core_properties.author='Markus Weldon';prs.core_properties.subject='Independent customer workflow proposal and lifecycle prototype'
+prs.core_properties.author='Markus Weldon';prs.core_properties.subject='OpenFix 0.2 implemented local case workflow and recorded demo'
 for scene,notes in slides: ppt_scene(prs,scene,notes)
 prs.save(OUT/'openfix-customer-workflow.pptx')
 
-for name,scene in [('lifecycle',lifecycle()),('architecture',architecture()),('current-v1',current_v1())]:
+mermaid = {
+    'architecture': """flowchart LR
+  A[Security file exports: SARIF GHAS Snyk Codex JSON] --> D[OpenFix local CLI]
+  B[Context exports: exact repository asset revision] --> D
+  C[Customer brief: outcome scope constraints] --> D
+  D <--> E[Persistent JSON cases + evidence + audit]
+  D --> F[Trusted local reference checks]
+  D --> G[Read-only workbench]
+  D --> H[Agent packets / optional Cursor dispatch]
+  H --> I[Committed diff + verification + exact-hash review]
+  I --> J[Separate publication and deployment controls]
+  K[Remaining: isolated workers and enterprise authentication]
+""",
+    'lifecycle': """flowchart LR
+  A[Import + correlate observations] --> B[Enrich + assess existing evidence]
+  B --> C[Validate supported subject]
+  C --> D[Accept owner priority and scope]
+  C --> Q[Disproved / inconclusive / conflict]
+  D --> E[Propose bounded change]
+  E --> F[Record committed base head and diff digest]
+  F --> G[Verify security + legitimate behavior]
+  G -->|Failed or incomplete| E
+  G --> H[Human review of exact hash]
+  H --> I[Separate publication deployment and closure]
+""",
+    'current-v1': """flowchart LR
+  A[Legacy v1: import findings] --> B[Policy routing]
+  B --> C[Optional Cursor executor]
+  C --> D[PR CI observation]
+  D --> E[Human review]
+  F[OpenFix 0.2 now defaults to persistent local case workflow]
+""",
+}
+mermaid['implemented-workflow'] = mermaid['lifecycle']
+for name, content in mermaid.items():
+    (DIAGRAMS/f'{name}.mmd').write_text(content)
+
+for name,scene in [('lifecycle',lifecycle()),('architecture',architecture()),('implemented-workflow',lifecycle()),('current-v1',current_v1())]:
     render_svg(scene,DIAGRAMS/f'{name}.svg');render_png(scene,DIAGRAMS/f'{name}.png')
 render_png(slides[0][0],OUT/'cover.png')
-notes=['# OpenFix talk track\n','This is an original rehearsal aid and independent architecture proposal. Start with discovery and use only the visuals that help.\n']
+notes=['# OpenFix talk track\n','OpenFix 0.2 is an implemented local case workflow. This original rehearsal aid uses synthetic source reports and real local fixture checks. Start with discovery and use only the visuals that help.\n']
 for i,(scene,note) in enumerate(slides,1):
     title=next(item['text'] for item in scene if item['kind']=='text' and item['size']==56)
     notes += [f'## {i:02}. {title.replace(chr(10), " ")}\n',note+'\n']
 (OUT/'talk-track.md').write_text('\n'.join(notes))
-print(f'Generated {len(slides)} slides, speaker notes, cover, and three SVG/PNG diagrams in {OUT}')
+print(f'Generated {len(slides)} slides, speaker notes, cover, and four SVG/PNG diagrams in {OUT}')

@@ -1,11 +1,11 @@
 flowchart LR
-  S[Inventory + scope + threat model] --> D[Discover / import]
-  D --> V[Validate evidence]
-  V --> T[Triage + accept]
-  T --> P[Generate patch]
-  P --> X[Verify exact patch]
-  X --> H[Human review]
-  H --> C[Merge / deploy / revalidate / close]
-  V --> Q[Disproved / needs context]
-  X -->|Failed or incomplete| P
-  H -->|Changes requested| P
+  A[Import + correlate observations] --> B[Enrich + assess existing evidence]
+  B --> C[Validate supported subject]
+  C --> D[Accept owner priority and scope]
+  C --> Q[Disproved / inconclusive / conflict]
+  D --> E[Propose bounded change]
+  E --> F[Record committed base head and diff digest]
+  F --> G[Verify security + legitimate behavior]
+  G -->|Failed or incomplete| E
+  G --> H[Human review of exact hash]
+  H --> I[Separate publication deployment and closure]

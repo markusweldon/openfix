@@ -8,7 +8,8 @@
  *
  * inFlightFingerprints() feeds policy so we don't spawn two agents for one issue.
  */
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile, open, rename, rm } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { FindingSchema, type Finding } from "../types/finding.js";
 import { z } from "zod";
@@ -93,8 +94,9 @@ export async function loadState(cwd = process.cwd()): Promise<OpenFixState> {
   try {
     const text = await readFile(statePath(cwd), "utf8");
     return StateSchema.parse(JSON.parse(text));
-  } catch {
-    return { findings: [], remediations: [] };
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return { findings: [], remediations: [] };
+    throw new Error("Legacy state is unreadable or corrupt; original state preserved", { cause: error });
   }
 }
 
@@ -103,7 +105,12 @@ export async function saveState(
   cwd = process.cwd(),
 ): Promise<void> {
   await ensureStateDir(cwd);
-  await writeFile(statePath(cwd), JSON.stringify(state, null, 2) + "\n", "utf8");
+  const temporary = statePath(cwd) + "." + randomUUID() + ".tmp";
+  try {
+    const handle = await open(temporary, "wx", 0o600);
+    try { await handle.writeFile(JSON.stringify(state, null, 2) + "\n"); await handle.sync(); } finally { await handle.close(); }
+    await rename(temporary, statePath(cwd));
+  } finally { await rm(temporary, { force: true }); }
 }
 
 /** Persist run JSON under .openfix/runs/ for CI artifacts / audit. */
@@ -188,3 +195,4 @@ export function inFlightFingerprints(state: OpenFixState): Set<string> {
       .map((r) => r.fingerprint),
   );
 }
+

@@ -278,7 +278,9 @@ export async function runVerify(
   printPrChecksReport(outcome);
   console.log("");
 
-  if (outcome.kind === "skipped") return 0;
+  if (outcome.kind === "skipped") return 2;
   if (outcome.failed) return 1;
-  return 0; // pass or pending — pending stays 0 so mid-CI is not flaky
+  if (outcome.pending || outcome.checks.length === 0 || outcome.checks.some(check => check.bucket !== "pass")) return 2;
+  return 0; // CI observation only; this does not independently establish a fix.
 }
+

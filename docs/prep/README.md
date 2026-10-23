@@ -1,9 +1,10 @@
 # OpenFix preparation pack
 
-**Purpose:** rehearse a discovery-led customer working session and make an evidence-backed plan for this repository. Start from the provided scenario and constraints. This is an independent reference design and original practice material, not an OpenAI product or a reproduction of an interview exercise.
+**Purpose:** explain the implemented OpenFix 0.2 reference workflow and rehearse a discovery-led customer working session. Start from the customer's scenario and constraints. This is an independent project, not an OpenAI product or a reconstruction of an interview scenario.
 
 ## Start here
 
+- [Recorded interactive workbench](../demo/workbench.html) and [integrated demo walkthrough](../../DEMO.md) — multi-source reports, preserved enrichment, actual reference validation, a failed fix and verified revision.
 - [Exercise workbook](exercise-workbook.md) — discovery, architecture, pilot decisions, and adapting to constraints.
 - [Prioritized repository strategy](repo-strategy.md) — what to keep, refactor, retire, and implement next.
 - [Product and operating-model map](product-landscape.md) — Defense Factory, Daybreak, Codex Security surfaces, and Promptfoo.
@@ -11,7 +12,7 @@
 - [Visual reference PDF](openfix-customer-workflow.pdf) — purple/synthwave gradients, with core canvases first and details as references.
 - [Editable PowerPoint](openfix-customer-workflow.pptx) — includes speaker notes and editable gradients.
 - [Talk track](talk-track.md) — concise prompts and source links for each slide.
-- [Current v1 workflow](diagrams/current-v1.svg), [proposed full lifecycle](diagrams/lifecycle.svg), and [target architecture](diagrams/architecture.svg) — scalable diagrams with PNG and Mermaid counterparts.
+- [Optional legacy Cursor path](diagrams/current-v1.svg), [case lifecycle](diagrams/lifecycle.svg), and [local workflow architecture](diagrams/architecture.svg) — scalable diagrams with PNG and Mermaid counterparts.
 - [Customer discovery and pilot worksheet](pilot-worksheet.md).
 - [Architecture contracts and implementation status](refactor-plan.md).
 - [Verification and limits](validation.md).
@@ -20,9 +21,9 @@ No presentation or advance implementation is required by the supplied exercise f
 
 ## What the assets claim
 
-The existing OpenFix application is a Cursor-based scanner-to-remediation orchestrator. Its source code remains the record of implemented behavior. The proposed lifecycle expands discovery, evidence, validation, triage, remediation, verification, review, and closure. The diagrams explicitly label that target architecture.
+OpenFix 0.2 is the running case workflow: import/correlate observations, assess existing enrichment, add exact context, validate, prioritize, accept scope, record/verify a patch, review, and retain the decision. Original producer claims remain attributed. The original Cursor path is an optional executor.
 
-The runnable lifecycle model under `src/lifecycle/` is a standalone prototype of decision gates, not a completed integration with every product in the diagrams. It is not wired into the running CLI. The new workflow's live Codex Security integration, isolated execution controls, trusted publication and production controls require implementation and verification. The v1 Cursor path already creates PRs; that does not supply the proposed artifact-bound review and publication service. Demo or simulated evidence must remain labeled.
+The lifecycle domain now operates on persistent cases through the default CLI. The integrated demo imports synthetic reports but executes actual fixture probes and verifies real committed diffs. Native product scans, model execution and deployment were not performed for the demo. Authenticated identity/evidence, isolated customer-code workers and live operational connectors remain production work. Local actor assertions and operator rollout attestations are labeled accordingly.
 
 No customer results, reduction percentages, cost savings, or production deployments are asserted in this pack.
 

@@ -93,6 +93,14 @@ export function loadPolicy(cwd = process.cwd()): OpenFixPolicy {
 
   try {
     const raw = parseYaml(readFileSync(policyPath, "utf8")) as Partial<OpenFixPolicy>;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Policy must be a mapping");
+    for (const [key, value] of Object.entries(raw)) {
+      if (!(key in DEFAULT_POLICY)) throw new Error(`Unknown policy field ${key}`);
+      const expected = DEFAULT_POLICY[key as keyof OpenFixPolicy];
+      if (typeof expected === "boolean" && typeof value !== "boolean") throw new Error(`${key} must be boolean`);
+      if (Array.isArray(expected) && (!Array.isArray(value) || !value.every(v => typeof v === "string"))) throw new Error(`${key} must contain strings`);
+      if (key.endsWith("_severities") && (value as string[]).some(v => !["critical","high","medium","low","info","note","unknown"].includes(v))) throw new Error(`${key} contains an invalid severity`);
+    }
     cachedPolicy = {
       ...DEFAULT_POLICY,
       ...raw,
@@ -110,11 +118,7 @@ export function loadPolicy(cwd = process.cwd()): OpenFixPolicy {
     };
     return cachedPolicy;
   } catch (err) {
-    console.error(
-      `Warning: failed to parse policy.yaml (${err instanceof Error ? err.message : err}); using defaults.`,
-    );
-    cachedPolicy = DEFAULT_POLICY;
-    return cachedPolicy;
+    throw new Error(`Invalid policy.yaml: ${err instanceof Error ? err.message : String(err)}; refusing to use fallback policy`, { cause: err });
   }
 }
 
@@ -264,3 +268,4 @@ export function summarizeTriage(results: TriageResult[]): Record<string, number>
   for (const r of results) counts[r.decision] += 1;
   return counts;
 }
+

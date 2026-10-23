@@ -1,71 +1,32 @@
-# Refactor OpenFix around the full security lifecycle
+# OpenFix architecture contracts and implementation status
 
-Read the [prioritized repository strategy](repo-strategy.md) for the current recommendation, code-specific gaps, implementation increments, and acceptance criteria. This document provides the supporting architecture contracts. The [exercise workbook](exercise-workbook.md) is the starting point for preparation.
+The initial refactor is implemented in version 0.2. Read [architecture](../architecture.md) for the current system and [repo strategy](repo-strategy.md) for remaining increments.
 
-## Current implementation
+## Running code
 
-The current CLI normalizes SARIF/JSON, makes deterministic routing decisions from `policy.yaml`, invokes Cursor cloud remediation agents, and observes PR CI through `gh`. It has no complete model of candidate validation, accepted findings, patch identity, verification gaps, reviewer disposition, or explicit closure.
+| Concern | Runtime implementation |
+| --- | --- |
+| Default CLI | `src/openfix.mjs` with import, enrich, show/list, validate, decide, plan, patch, verify, review, rollout/close, report and serve |
+| Source adapters | `src/workflow/import.mjs` preserves producer observations and supplied evidence, with scoped correlation |
+| Evidence and priority | `src/workflow/enrich.mjs` checks source/revision/freshness, joins context, records conflicts and explains priority |
+| Lifecycle | `src/lifecycle/workflow.mjs` is used by `src/workflow/operations.mjs` on persistent cases |
+| Persistence | `src/workflow/store.mjs` uses cross-process writer exclusion, atomic/fsynced writes and integrity checkpoints |
+| Validation | `src/workflow/validation.mjs` executes the reference probe or records explicitly reviewed external evidence |
+| Optional executor | `src/workflow/providers.mjs` and `cursor-bridge.ts` gate the existing Cursor SDK path behind an accepted case |
+| Native workflow | Exported task packet and repository investigation/remediation skills use the customer's approved existing host |
+| Review surface | `src/workflow/report.mjs` renders current state to an interactive HTML casebook or loopback-only read-only server |
 
-That implementation remains useful as a remediation adapter. The previous framing that all detection must come from deterministic scanners is too restrictive for a Codex Security integration: AI-assisted discovery and validation are themselves part of the documented product workflow.
+## Important distinctions
 
-## Proposed lifecycle
+- Producer enrichment is preserved, not upgraded to trusted independent evidence.
+- Matching observations are grouped for investigation, not silently treated as proven duplicates.
+- Source-supported findings and runtime reproduction use distinct methods and limits.
+- Priority selects attention; acceptance and execution authority remain separate.
+- An exact patch, passing checks, human review, deployment and closure are different states.
+- Rollout/closure currently record operator attestations; they do not perform or independently observe production changes.
 
-```mermaid
-flowchart LR
-    S[Inventory, scope and threat model] --> D[Discover or import candidates]
-    D --> V[Validate evidence]
-    V --> T[Triage and accept]
-    T --> P[Generate bounded patch]
-    P --> X[Verify exact patch]
-    X --> H[Human review]
-    H --> M[Normal merge and deployment controls]
-    M --> C[Revalidate and close explicitly]
-    V --> Q[Disproved or needs context]
-    T --> Q
-    X -->|Failed or incomplete| P
-    H -->|Changes requested| P
-    C -->|Issue persists| V
-```
+The old Cursor CLI is available through `npm run legacy -- ...`. Its invalid policy and corrupt state now fail explicitly, its source-agnostic prompt carries bounded case evidence, and incomplete CI observation returns a non-success readiness code. It is not the default application or independent fix verifier.
 
-This is an application design, not a claim that every OpenAI surface uses one rigid sequence. Early triage can decide what to investigate before expensive validation. A later acceptance decision authorizes remediation.
+## Boundaries still requiring production work
 
-## Contracts that need to change
-
-| Concern | Current | Refactor |
-| --- | --- | --- |
-| Finding | Scanner record with severity | Candidate with provenance, asset/revision, evidence, and confidence |
-| Validation | Implicit in incoming report | Confirmed, disproved, inconclusive, or not run; method and limitations |
-| Triage | Fix/human/noise buckets | Owner, priority rationale, acceptance/defer/dismiss, and decision reason |
-| Patch | Agent ID and PR URL | Exact base revision, changed files, artifact hash, scope, authoring engine |
-| Verification | PR check polling | Original failure, legitimate behavior, test/rescan results, proof gaps, exact patch binding |
-| Review | Expected downstream | Reviewer disposition bound to patch identity; changes invalidate approval |
-| Closure | Not modeled | Separate explicit decision after verification and normal change controls |
-
-## Architecture responsibilities
-
-- **Adapters:** Codex Security discovery/validation and imported scanner findings. Cloud/runtime systems provide context through an explicit asset and version mapping; their mutations belong to separate authorized workflows.
-- **Workflow domain:** state transitions, authorization checks, proof requirements, and invalidation. Vendor APIs do not own this policy.
-- **Evidence store:** finding origin, source revision, commands, artifacts, results, coverage gaps, actor decisions, and retention.
-- **Execution:** one isolated job per task, minimal credentials, controlled egress, resource bounds, and cancellation.
-- **Review and publication:** a separate identity can publish a reviewed patch; branch protection and normal deployment controls retain authority.
-
-## Existing standalone prototype
-
-`src/lifecycle/workflow.mjs` implements the state and decision gates while preserving prior states and decision events. Its tests cover missing evidence, unvalidated findings, false positives, stale patch verification, approval invalidation, and premature closure. `scripts/demo-lifecycle.mjs` exercises the full decision sequence with explicitly simulated evidence. This module is not wired into the running `openfix` / `dev` CLI.
-
-The prototype does not implement a production scan executor, a hosted multi-tenant service, live cloud/runtime connectors, or artifact-bound GitHub publication. The separate v1 Cursor adapter can create PRs, but it does not implement the proposed lifecycle publication contract. A successful lifecycle demo is not a live Codex Security scan or security evaluation.
-
-## Implementation sequence
-
-1. Use the lifecycle domain as the record of truth and adapt SARIF imports into candidates.
-2. Implement and verify the documented Codex Security CLI/SDK adapter using the customer's chosen supported authentication. Preserve completed-vs-covered and failed-vs-policy-exit distinctions.
-3. Move Cursor remediation behind the same patch/evidence contract rather than keeping it as the top-level workflow.
-4. Introduce isolated execution, external verification, audit storage, and actor identity before customer code is accepted.
-5. Add a workbench over actual lifecycle state and artifacts. Show inconclusive validation, failed verification, and missing context as normal outcomes.
-6. Add publication and closure with exact artifact binding, protected merge, rollout evidence, and revalidation.
-
-## OpenAI alignment
-
-OpenAI's scan guide separates scan completion from coverage, includes source-based validation, and asks reviewers to accept a finding before fixing it. Its fix guide separates patch generation, application, verification, and explicit closure. Runtime reproduction is valuable when feasible; missing runtime proof must be recorded rather than silently converted into certainty.
-
-References: [scan guide](https://learn.chatgpt.com/docs/security/plugin/scans), [fix guide](https://learn.chatgpt.com/docs/security/plugin/fix-findings), [CLI contract](https://learn.chatgpt.com/docs/security/cli/reference), [SDK contract](https://learn.chatgpt.com/docs/security/sdk).
+Local actor labels are not authenticated RBAC, local audit hashes are not administrator-proof signatures, and the bounded reference process is not an isolated customer-code worker. Live product/provider checks, authenticated context connectors and external deployment verification remain to be qualified. These limits are part of the operating design and are not hidden by a successful fixture run.

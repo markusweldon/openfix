@@ -1,17 +1,22 @@
-# Verification of this preparation pack
+# Verification of OpenFix 0.2
 
-- The lifecycle domain's **16 tests pass**, including rejection of unvalidated acceptance, stale verification, missing or failed required checks, self-approval, changed-patch approval, and premature closure.
-- `npm run demo:lifecycle` walks through the modeled lifecycle and explicitly labels every evidence and rollout claim as a simulation. It performs no scan, model request, merge, or deployment.
-- The revised PowerPoint contains **16 slides with 16 speaker-note sections**, using editable purple/violet gradients. The exported PDF contains **16 pages**. Every slide was rendered for visual review, with additional inspection of the lifecycle, architecture, and source slides.
-- Main card body text is **23.04 pt**, with near-white text on darker cards. The body palette measures **14.37:1** contrast at the brightest gradient endpoint and **15.96:1** on cards. Cyan source links measure **13.03:1** at that endpoint and remain clickable in the exported PDF.
-- PDF export retains all PowerPoint text tokens, with no text outside page bounds. Its five source links point to the intended documentation. Source links, diagrams, and the whiteboard use the same higher-contrast palette.
-- The pack includes current-v1, proposed-lifecycle, and target-architecture diagrams in SVG, PNG, and Mermaid, plus editable generation source.
-- The Excalidraw canvas contains 58 elements with validated IDs, text bindings, and bounds. A local preview was inspected; import through the Excalidraw application was not tested.
-- The preparation documents contain no recruiter email addresses, meeting links, or private recruiting messages. The practice scenario is original and hypothetical.
-- Relative links across the Markdown documents were checked against the repository tree and preparation files.
+## Runtime evidence
+
+- `npm test`: 44 passed, zero failed/skipped. `npm run typecheck` and `npm run build` passed.
+- The primary CLI imports multiple source formats and uses the lifecycle domain on persistent cases. Separate-process CLI checks verify import and report behavior across restarts.
+- The integrated demo retains five observations in four cases and five attempted validation/verification runs. Four reference probes actually execute; one unavailable profile remains inconclusive.
+- A cross-tenant lookup is reproduced. A protected lookup is disproved. Conflicting ownership remains visible. A deny-all patch fails legitimate behavior and cannot approve; the corrected patch passes at its actual Git head and diff digest.
+- Software checks cover producer self-confirmation, wrong-subject evidence, stale/undated context, conflicts, missing runtime capability, atomic storage, writer contention, corruption, unsafe source paths, unsafe HTML embedding, exact artifacts and review/closure gates.
+- TypeScript checking and build cover the retained Cursor adapter. Invalid legacy policy and corrupt legacy state were checked directly and preserve the original data.
+
+## Visual and documentation checks
+
+The workbench uses current persisted case data and supports read-only case selection, filtering and evidence inspection. Chromium checks selected all four cases, filtered to the inconclusive dependency and conflicting-owner cases, and reported no JavaScript errors. The recorded HTML contains only reference-demo data.
+
+The revised purple deck has 16 slides, 16 speaker notes and 16 exported PDF pages. Rendered contact-sheet and dense-slide inspection found no visible overflow; PDF text spans remain within page bounds. It embeds the actual workbench screenshot. Main body text contrast is at least 14.37:1. Mermaid, SVG and PNG sources describe the same implemented architecture and gates. The editable whiteboard validates with 58 elements, 17 prompts and no external assets.
 
 ## Limits
 
-This documentation and design update does not implement or validate the complete production refactor. No live Codex Security scan, model evaluation, or cloud/runtime integration was executed for this pack. The running CLI remains the v1 pipeline; the lifecycle simulation and its passing tests are a separate prototype.
+No live scanner, model request, Cursor job, production deployment or customer outcome is claimed. The Codex Security JSON adapter is checked against the documented wrapper/fields and synthetic contract fixtures; it does not authenticate a Cloud export or establish a live integration.
 
-The workflow domain trusts evidence and actor assertions supplied by its caller. Production use needs authenticated identity, evidence integrity, isolated execution, actual verification results, durable audit storage, and verified product adapters. Lifecycle tests establish software decision behavior; they do not establish vulnerability detection accuracy, model quality, or customer outcomes.
+The local tenant probe is a narrow reference check in a bounded process, not a container/network sandbox. Local actor names and roles are caller assertions. Production use needs isolated execution, authenticated actor/tenant/action authorization, trusted evidence ingestion and external audit. The casebook and fixture tests do not establish vulnerability detection accuracy, model quality or production ROI.

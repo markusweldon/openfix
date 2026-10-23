@@ -1,16 +1,11 @@
-flowchart TB
-  subgraph sources[Evidence sources]
-    A[Codex Security discovery + validation]
-    B[Scanner imports]
-    C[Cloud inventory + runtime context]
-  end
-  A --> D[OpenFix lifecycle + evidence store]
-  B --> D
-  C -->|Explicit asset + revision mapping| D
-  D --> E[Isolated remediation executor]
-  E --> F[Independent verification of exact patch]
-  F --> G[Human review]
-  G --> H[Separate publication identity]
-  H --> I[Protected merge + rollout]
-  I --> J[Revalidation + explicit closure]
-  J --> D
+flowchart LR
+  A[Security file exports: SARIF GHAS Snyk Codex JSON] --> D[OpenFix local CLI]
+  B[Context exports: exact repository asset revision] --> D
+  C[Customer brief: outcome scope constraints] --> D
+  D <--> E[Persistent JSON cases + evidence + audit]
+  D --> F[Trusted local reference checks]
+  D --> G[Read-only workbench]
+  D --> H[Agent packets / optional Cursor dispatch]
+  H --> I[Committed diff + verification + exact-hash review]
+  I --> J[Separate publication and deployment controls]
+  K[Remaining: isolated workers and enterprise authentication]

@@ -70,7 +70,7 @@ def area(number, title, subtitle, x, y, width, height):
     return group
 
 
-text('title', 'A customer workflow, discovered together', 80, 40, 2280, 44, LAVENDER)
+text('title', 'OpenFix 0.2 • Discover the customer workflow', 80, 40, 2280, 44, LAVENDER)
 text('subtitle', "Fill from the customer's answers. Choose capabilities after the problem is clear. Revise the design as constraints change.",
      84, 110, 2250, 24, MUTED)
 
@@ -82,12 +82,12 @@ areas = [
     ]),
     ('02', 'Current workflow and evidence', 'Understand the work already happening.', 860, [
         'What happens today?\nInputs → tools → queues → handoffs: ______',
-        'What evidence is trusted?\nAssets / code revision / deployed version: ______',
-        'Where does work wait?\nBaseline effort / delay / existing controls: ______',
+        'Existing evidence?\nProducer / revision / age / proof: ______',
+        'What needs investigation?\nGaps / stale evidence / conflicts / owner: ______',
     ]),
     ('03', 'Smallest useful AI step', 'Select the contribution before the platform.', 1640, [
         'Where does AI add value?\nOne useful task: ______',
-        'What already exists?\nNative capability / thin integration / custom code: ______',
+        'What already exists?\nNative capability / evidence reuse / integration gap: ______',
         'Who keeps authority?\nDeterministic checks / human decisions: ______',
     ]),
 ]
@@ -108,7 +108,7 @@ for index, value in enumerate([
 
 group = area('05', 'Pilot and decision', 'A small pilot should lead to an operating decision.', 1250, 950, 1110, 610)
 for index, value in enumerate([
-    'Evidence and examples\nLabels / proof / legitimate behavior / negative cases: ______',
+    'Evidence and examples\nProof / legitimate behavior / stale or conflicting claims: ______',
     'Measures and baseline\nEffort / accepted outcomes / cost / sample size: ______',
     'Owners and milestones\nWho does what, and by when? ______',
     'Decision gate\nStop / revise / expand one scope dimension: ______',

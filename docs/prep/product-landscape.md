@@ -4,6 +4,8 @@ Research checked on October 22, 2026. Product capabilities, access and billing c
 
 Endor Labs Agent Kit reference added after reviewing its public repository and output contract on October 23, 2026.
 
+OpenFix 0.2 imports Codex Security's documented `scan --json` wrapper and SARIF, preserving native finding evidence and coverage metadata. It exports native-agent task packets and includes repository skills. This is file/contract integration; no authenticated live Cloud connector, live native scan or direct OpenAI API client is claimed. See [input contracts](../input-contracts.md) and [architecture](../architecture.md).
+
 | Name | Documented role | Boundary for this project |
 | --- | --- | --- |
 | **Defense Factory** | OpenAI's continuous defensive operating model and reference architecture. It joins existing tools, system context, isolated execution, orchestration, policy, ownership and verification. | Learn the process and boundaries. OpenFix can demonstrate an integration workflow; it should not claim to be OpenAI's internal system. [Official description](https://openai.com/the-defense-factory/) |

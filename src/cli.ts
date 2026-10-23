@@ -57,7 +57,7 @@ const program = new Command();
 program
   .name("openfix")
   .description(
-    "Scanner findings in. Cursor agents remediate. PRs out for human review.",
+    "Legacy Cursor adapter. Use the OpenFix v0.2 CLI for cases, enrichment, validation and review.",
   )
   .version("0.1.0");
 
@@ -245,7 +245,7 @@ program
     "Spawn up to N concurrent agents (capped by queue + OPENFIX_MAX_CONCURRENT)",
     (v) => Number.parseInt(v, 10),
   )
-  .option("--all-auto", "Drain auto_fix queue up to OPENFIX_MAX_CONCURRENT")
+  .option("--all-auto", "Start one batch up to OPENFIX_MAX_CONCURRENT")
   .option("--fingerprint <fp>", "Remediate a single finding by fingerprint")
   .option(
     "--verbose",
@@ -509,3 +509,4 @@ program.parseAsync(process.argv).catch((err: unknown) => {
   console.error(message);
   process.exitCode = 1;
 });
+

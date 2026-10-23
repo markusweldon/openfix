@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img">
-<title>OpenFix architecture proposal</title>
+<title>OpenFix local workflow</title>
 <defs><linearGradient id="synthwave-background" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#10071C"/><stop offset="1" stop-color="#28103F"/></linearGradient><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#9DEEFF"/></marker></defs>
 <rect width="1600" height="900" fill="url(#synthwave-background)"/>
 <line x1="0" y1="785" x2="1600" y2="785" stroke="#6C3A8A" stroke-opacity=".19"/>
@@ -25,42 +25,40 @@
 <line x1="1760.0" y1="770" x2="2400" y2="900" stroke="#6C3A8A" stroke-opacity=".19"/>
 <rect x="70" y="62" width="42" height="7" rx="12" fill="#E4C7FF"/>
 <text x="130" y="67.0" fill="#E4C7FF" font-size="20" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">OPENFIX / CUSTOMER WORKFLOW / VISUAL REFERENCE</text>
-<text x="70" y="181.0" fill="#FFFFFF" font-size="56" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">A control plane with clear authority</text>
-<text x="74" y="256.0" fill="#F0E9FC" font-size="30" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Target architecture: integrate security capabilities without giving one process every</text>
-<text x="74" y="293.8" fill="#F0E9FC" font-size="30" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">permission.</text>
+<text x="70" y="181.0" fill="#FFFFFF" font-size="56" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">The implemented local architecture</text>
+<text x="74" y="256.0" fill="#F0E9FC" font-size="30" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">One CLI owns durable cases; adapters and execution profiles have explicit boundaries.</text>
 <line x1="70" y1="829" x2="1530" y2="829" stroke="#9C7ABF" stroke-width="3"/>
-<text x="73" y="867.0" fill="#C4B1DB" font-size="17" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Independent project • Customer exercise reference</text>
-<text x="1450" y="866.0" fill="#E4C7FF" font-size="21" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">06</text>
-<rect x="70" y="310" width="330" height="116" rx="12" fill="#160C25" stroke="#9C7ABF"/>
-<text x="90" y="353.0" fill="#FFFFFF" font-size="27" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Codex Security</text>
-<text x="90" y="394.0" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Discovery + validation</text>
-<line x1="404" y1="365" x2="510" y2="500" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
-<rect x="70" y="455" width="330" height="116" rx="12" fill="#160C25" stroke="#9C7ABF"/>
-<text x="90" y="498.0" fill="#FFFFFF" font-size="27" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Scanner findings</text>
-<text x="90" y="539.0" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">SARIF / JSON imports</text>
-<line x1="404" y1="510" x2="510" y2="500" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
-<rect x="70" y="600" width="330" height="116" rx="12" fill="#160C25" stroke="#9C7ABF"/>
-<text x="90" y="643.0" fill="#FFFFFF" font-size="27" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Cloud + runtime</text>
-<text x="90" y="684.0" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Asset + version mapping</text>
-<line x1="404" y1="655" x2="510" y2="500" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
-<rect x="520" y="375" width="410" height="250" rx="12" fill="#160C25" stroke="#9C7ABF"/>
-<text x="545" y="441.0" fill="#FFFFFF" font-size="39" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">OpenFix</text>
-<text x="545" y="494.0" fill="#F0E9FC" font-size="29" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Lifecycle policy</text>
-<text x="545" y="530.54" fill="#F0E9FC" font-size="29" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Evidence + provenance</text>
-<text x="545" y="567.08" fill="#F0E9FC" font-size="29" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Review + audit</text>
-<rect x="1035" y="310" width="485" height="126" rx="12" fill="#160C25" stroke="#9C7ABF"/>
-<text x="1060" y="359.0" fill="#FFFFFF" font-size="31" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Isolated executor</text>
-<text x="1060" y="405.0" fill="#F0E9FC" font-size="26" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Read source / bounded patch</text>
-<rect x="1035" y="490" width="485" height="126" rx="12" fill="#160C25" stroke="#9C7ABF"/>
-<text x="1060" y="539.0" fill="#FFFFFF" font-size="31" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Independent verification</text>
-<text x="1060" y="585.0" fill="#F0E9FC" font-size="26" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Exact artifact + proof gaps</text>
-<line x1="935" y1="442" x2="1025" y2="370" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
-<line x1="1278" y1="434" x2="1278" y2="482" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
-<line x1="1028" y1="550" x2="935" y2="565" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
-<rect x="520" y="700" width="410" height="80" rx="12" fill="#160C25" stroke="#9C7ABF"/>
-<text x="545" y="750.0" fill="#E4C7FF" font-size="29" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Human review</text>
-<line x1="725" y1="631" x2="725" y2="690" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
-<rect x="1035" y="700" width="485" height="80" rx="12" fill="#160C25" stroke="#9C7ABF"/>
-<text x="1060" y="745.0" fill="#FFFFFF" font-size="27" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Separate publish identity</text>
-<line x1="935" y1="740" x2="1025" y2="740" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
+<text x="73" y="867.0" fill="#C4B1DB" font-size="17" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">OpenFix 0.2 • Local implementation / recorded demo</text>
+<text x="1450" y="866.0" fill="#E4C7FF" font-size="21" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">05</text>
+<rect x="70" y="315" width="350" height="116" rx="12" fill="#160C25" stroke="#9C7ABF"/>
+<text x="90" y="359.0" fill="#FFFFFF" font-size="28" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Security exports</text>
+<text x="90" y="401.0" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">SARIF + tool JSON</text>
+<line x1="424" y1="373" x2="510" y2="515" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="70" y="465" width="350" height="116" rx="12" fill="#160C25" stroke="#9C7ABF"/>
+<text x="90" y="509.0" fill="#FFFFFF" font-size="28" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Context exports</text>
+<text x="90" y="551.0" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Repo / asset / revision</text>
+<line x1="424" y1="523" x2="510" y2="515" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="70" y="615" width="350" height="116" rx="12" fill="#160C25" stroke="#9C7ABF"/>
+<text x="90" y="659.0" fill="#FFFFFF" font-size="28" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Customer brief</text>
+<text x="90" y="701.0" fill="#F0E9FC" font-size="23" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Scope + people + limits</text>
+<line x1="424" y1="673" x2="510" y2="515" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="520" y="370" width="460" height="280" rx="12" fill="#160C25" stroke="#9C7ABF"/>
+<text x="545" y="433.0" fill="#FFFFFF" font-size="36" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">OpenFix local CLI</text>
+<text x="545" y="495.0" fill="#F0E9FC" font-size="28" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Persistent JSON cases</text>
+<text x="545" y="530.28" fill="#F0E9FC" font-size="28" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Evidence + assessment</text>
+<text x="545" y="565.56" fill="#F0E9FC" font-size="28" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Decision and patch gates</text>
+<text x="545" y="600.84" fill="#F0E9FC" font-size="28" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Hash-chained audit</text>
+<rect x="1080" y="315" width="450" height="116" rx="12" fill="#160C25" stroke="#9C7ABF"/>
+<text x="1100" y="360.0" fill="#FFFFFF" font-size="29" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Reference checks</text>
+<text x="1100" y="402.0" fill="#F0E9FC" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Trusted local tenant profile</text>
+<line x1="984" y1="515" x2="1070" y2="373" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="1080" y="465" width="450" height="116" rx="12" fill="#160C25" stroke="#9C7ABF"/>
+<text x="1100" y="510.0" fill="#FFFFFF" font-size="29" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Read-only workbench</text>
+<text x="1100" y="552.0" fill="#F0E9FC" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Cases, provenance, gaps, gates</text>
+<line x1="984" y1="515" x2="1070" y2="523" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="1080" y="615" width="450" height="116" rx="12" fill="#160C25" stroke="#9C7ABF"/>
+<text x="1100" y="660.0" fill="#FFFFFF" font-size="29" font-family="DejaVu Sans,Arial,sans-serif" font-weight="700">Agent handoff</text>
+<text x="1100" y="702.0" fill="#F0E9FC" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Task packets / optional Cursor</text>
+<line x1="984" y1="515" x2="1070" y2="673" stroke="#9DEEFF" stroke-width="3" marker-end="url(#arrow)"/>
+<text x="75" y="795.0" fill="#FFACDD" font-size="24" font-family="DejaVu Sans,Arial,sans-serif" font-weight="400">Local processes and actor labels are implemented. Isolated workers and enterprise authentication are not.</text>
 </svg>
