@@ -10,6 +10,7 @@ Start with the [repository walkthrough](docs/repository-walkthrough.md). It is a
 
 - [AI security and DevSecOps](docs/ai-security-model.md): what AI changes, what mature security programs already do, and the distinction between securing software with AI and securing AI systems.
 - [System architecture and detailed Mermaid diagrams](docs/architecture.md): components, trust boundaries, evidence decisions, lifecycle, agent handoffs, data model and production evolution.
+- [Editable Excalidraw architecture whiteboards](docs/whiteboards/README.md): three focused views of customer value, trust boundaries and exact-patch approval, with SVG/PNG previews.
 - [Input and evidence contracts](docs/input-contracts.md): what crosses a boundary and what authority it carries.
 - [Roadmap](ROADMAP.md): the next implementation increments and their acceptance criteria.
 

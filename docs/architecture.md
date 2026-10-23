@@ -6,6 +6,8 @@ The core design question is: **when an AI system can investigate and propose cha
 
 Read the first four diagrams in order for the system story. The data model explains how that story persists; the last diagram separates the production destination from the local implementation. Every diagram has an editable Mermaid source in [diagrams/](diagrams/).
 
+For a visual conversation, the [editable Excalidraw whiteboards](whiteboards/README.md) distill this detail into three views: customer value, system boundaries, and proof before approval. Their source links lead back to this guide and the implementation.
+
 ## 1. Implemented components and trust boundaries
 
 ```mermaid

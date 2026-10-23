@@ -10,7 +10,8 @@
 - [Exercise workbook](exercise-workbook.md) — discovery, architecture, pilot decisions, and adapting to constraints.
 - [Prioritized repository strategy](repo-strategy.md) — what to keep, refactor, retire, and implement next.
 - [Product and operating-model map](product-landscape.md) — Defense Factory, Daybreak, Codex Security surfaces, and Promptfoo.
-- [Editable Excalidraw whiteboard](customer-workflow.excalidraw) — a flexible five-part canvas.
+- [Three editable Excalidraw architecture whiteboards](../whiteboards/README.md) — customer value, system boundaries and proof before approval, with SVG/PNG previews.
+- [Blank customer-discovery canvas](customer-workflow.excalidraw) — a flexible five-part workspace to fill from the customer's answers.
 - [Visual reference PDF](openfix-customer-workflow.pdf) — optional purple/synthwave repository and value companion.
 - [Editable PowerPoint](openfix-customer-workflow.pptx) — includes speaker notes and editable gradients.
 - [Talk track](talk-track.md) — concise prompts and source links for each slide.
@@ -36,9 +37,10 @@ From the repository root, with Python, `python-pptx` and Pillow installed:
 ```bash
 python scripts/build-prep-assets.py
 python scripts/build-whiteboard.py
+python scripts/build-architecture-whiteboards.py
 ```
 
-The scripts generate the PowerPoint, SVG/PNG diagrams, talk track, and editable Excalidraw canvas. The whiteboard generator uses only the Python standard library. If LibreOffice is available, export the PDF with:
+The scripts generate the PowerPoint, SVG/PNG diagrams, talk track, discovery canvas and three editable architecture whiteboards. The whiteboard generators use only the Python standard library; architecture previews are exported from Excalidraw. If LibreOffice is available, export the PDF with:
 
 ```bash
 soffice --headless --convert-to pdf --outdir docs/prep docs/prep/openfix-customer-workflow.pptx

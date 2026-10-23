@@ -17,6 +17,8 @@ The revised purple repository companion has 16 slides, 16 speaker notes and 16 e
 
 The README, detailed architecture guide and AI security guide include nine Mermaid diagrams. The six architecture diagrams also have matching standalone `.mmd` sources. Documentation checks cover embedded/source agreement, local links and Mermaid rendering. Source and tests remain the basis for implementation claims; the proposed production and agent-evaluation diagrams are labeled separately.
 
+Three additional Excalidraw architecture canvases contain 133 editable elements and 18 bound arrows. All opened in the native Excalidraw 0.18.1 editor and exported to SVG/PNG. Restore/export preserved IDs, reciprocal arrow bindings and all text tokens, with no page errors. A pointer-drag check confirmed that a connected arrow follows its node. The diagrams distinguish implemented local behavior from separate execution hosts and proposed production controls.
+
 ## Limits
 
 No live scanner, model request, Cursor job, production deployment or customer outcome is claimed. The Codex Security JSON adapter is checked against the documented wrapper/fields and synthetic contract fixtures; it does not authenticate a Cloud export or establish a live integration.

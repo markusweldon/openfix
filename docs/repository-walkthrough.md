@@ -4,6 +4,8 @@ OpenFix explores a customer problem: security tools can find and enrich issues f
 
 This is an optional 10–15 minute reading path. Open the files and diagrams together; no application, recording or live execution is needed. In a customer working session, first discover the problem, stakeholders, constraints and existing workflow, then choose the relevant stops.
 
+The [three editable Excalidraw whiteboards](whiteboards/README.md) provide a visual companion for value, trust boundaries and approval. Choose one when it makes a question easier to discuss; the file-reading path below stands on its own.
+
 ## 1. Establish the scope
 
 Open [the CLI](../src/openfix.mjs) and [input contracts](input-contracts.md). Follow the command surface from import and enrichment to validation, acceptance, patch verification and review.
