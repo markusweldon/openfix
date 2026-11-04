@@ -1,0 +1,29 @@
+# Policy for the example app. See docs/policy.md for every option.
+version: 1
+default_action: propose
+
+rules:
+  - name: secrets need rotation, not a code change
+    match: { category: [secrets] }
+    action: skip
+  - name: code findings
+    match: { category: [sast], min_severity: low }
+    action: autofix
+
+guards:
+  max_files_changed: 3
+  max_lines_changed: 80
+
+models:
+  author: anthropic:claude-opus-5-5
+  # reviewer: openai:gpt-5
+
+verify:
+  require: [rescan, tests, regression_test]
+  tests: { command: "node --test test/*.test.js" }
+  setup: { command: "true" }          # the unit tests need no npm install
+  scanner:
+    command: "semgrep scan --config .semgrep.yml --sarif --output {output} --metrics off --quiet --disable-version-check src"
+
+sandbox:
+  backend: auto

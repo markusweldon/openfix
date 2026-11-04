@@ -1,0 +1,103 @@
+# Local Semgrep rules for the example app, so the demo runs offline and every finding is
+# reproducible: `semgrep scan --config .semgrep.yml --sarif -o findings/semgrep.sarif`.
+rules:
+  - id: path-traversal-path-join
+    languages: [javascript]
+    severity: ERROR
+    message: User-controlled path is joined onto a base directory and read without checking it stays inside.
+    metadata: {cwe: ["CWE-22: Path Traversal"], category: security, security-severity: "7.5"}
+    patterns:
+      - pattern-inside: |
+          function $F(..., $INPUT, ...) { ... }
+      - pattern: $FS.readFileSync(<... $PATH.join(..., $INPUT, ...) ...>, ...)
+  - id: path-traversal-path-join-var
+    languages: [javascript]
+    severity: ERROR
+    message: User-controlled path is joined onto a base directory and read without checking it stays inside.
+    metadata: {cwe: ["CWE-22: Path Traversal"], category: security, security-severity: "7.5"}
+    patterns:
+      - pattern-inside: |
+          function $F(..., $INPUT, ...) { ... }
+      - pattern-inside: |
+          var $T = path.join(..., $INPUT);
+          ...
+      - pattern: fs.readFileSync($T, ...)
+  - id: command-injection-exec-concat
+    languages: [javascript]
+    severity: ERROR
+    message: A shell command is built by string concatenation with a function argument.
+    metadata: {cwe: ["CWE-78: OS Command Injection"], category: security, security-severity: "9.0"}
+    patterns:
+      - pattern-inside: |
+          function $F(..., $INPUT, ...) { ... }
+      - pattern-either:
+          - pattern: exec("..." + $INPUT, ...)
+          - pattern: $CP.exec("..." + $INPUT, ...)
+  - id: eval-user-input
+    languages: [javascript]
+    severity: ERROR
+    message: A function argument reaches eval().
+    metadata: {cwe: ["CWE-95: Eval Injection"], category: security, security-severity: "9.0"}
+    patterns:
+      - pattern-inside: |
+          function $F(..., $INPUT, ...) { ... }
+      - pattern: eval($INPUT)
+  - id: sql-string-concat
+    languages: [javascript]
+    severity: ERROR
+    message: SQL is built by concatenating a function argument; use a parameterised query.
+    metadata: {cwe: ["CWE-89: SQL Injection"], category: security, security-severity: "8.0"}
+    patterns:
+      - pattern-inside: |
+          function $F(..., $INPUT, ...) { ... }
+      - pattern: '"$SQL" + $INPUT + ...'
+      - metavariable-regex: {metavariable: $SQL, regex: "(?i)^\\s*select .* where .*"}
+  - id: html-string-concat
+    languages: [javascript]
+    severity: WARNING
+    message: HTML is built by concatenating an unencoded function argument (XSS).
+    metadata: {cwe: ["CWE-79: Cross-site Scripting"], category: security, security-severity: "6.1"}
+    patterns:
+      - pattern-inside: |
+          function $F(..., $INPUT, ...) { ... }
+      - pattern: '"$HTML" + $INPUT + ...'
+      - metavariable-regex: {metavariable: $HTML, regex: "^\\s*<[a-zA-Z]"}
+  - id: vm-run-user-code
+    languages: [javascript]
+    severity: ERROR
+    message: A function argument is executed with vm.runInNewContext, which is not a security boundary.
+    metadata: {cwe: ["CWE-94: Code Injection"], category: security, security-severity: "8.5"}
+    patterns:
+      - pattern-inside: |
+          function $F(..., $INPUT, ...) { ... }
+      - pattern: $VM.runInNewContext($INPUT, ...)
+  - id: execfile-shell-true
+    languages: [javascript]
+    severity: ERROR
+    message: "execFile with shell: true passes user arguments through a shell."
+    metadata: {cwe: ["CWE-78: OS Command Injection"], category: security, security-severity: "8.0"}
+    pattern: 'execFile($CMD, $ARGS, {..., shell: true, ...}, ...)'
+  - id: deprecated-create-cipher
+    languages: [javascript]
+    severity: WARNING
+    message: crypto.createCipher derives a key without salt and a fixed IV; use createCipheriv with a random IV.
+    metadata: {cwe: ["CWE-327: Broken or Risky Cryptographic Algorithm"], category: security, security-severity: "5.9"}
+    pattern: $C.createCipher(...)
+  - id: prototype-pollution-key-copy
+    languages: [javascript]
+    severity: WARNING
+    message: Keys from parsed user JSON are copied onto an object without blocking __proto__/constructor.
+    metadata: {cwe: ["CWE-1321: Prototype Pollution"], category: security, security-severity: "6.5"}
+    pattern: |
+      for (var $K in $SRC) {
+        $DST[$K] = $SRC[$K];
+      }
+  - id: hardcoded-api-token
+    languages: [javascript]
+    severity: ERROR
+    message: A live-looking API token is hardcoded in source.
+    metadata: {cwe: ["CWE-798: Hard-coded Credentials"], category: security, security-severity: "7.5"}
+    patterns:
+      - pattern: var $NAME = "$VALUE";
+      - metavariable-regex: {metavariable: $NAME, regex: "(?i).*(token|secret|api_?key).*"}
+      - metavariable-regex: {metavariable: $VALUE, regex: "^sk_(live|test)_"}

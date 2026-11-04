@@ -1,0 +1,130 @@
+import json
+
+from openfix.deps import choose_fixed_version, try_bump
+from openfix.findings import Category, Finding, Location, Package, Severity
+from openfix.policy import Action, Policy, glob_match
+from openfix.redact import redact
+from openfix.sarif_out import to_sarif
+from openfix.scanners import line_map, matches
+
+
+def finding(**kw):
+    base = dict(tool="semgrep", rule_id="x.path-traversal", title="t", location=Location(path="src/a.js", start_line=5))
+    base.update(kw)
+    return Finding(**base)
+
+
+def test_default_policy_decisions():
+    p = Policy()
+    assert p.decide(finding()).action is Action.autofix
+    assert p.decide(finding(category=Category.secrets)).action is Action.skip
+    assert p.decide(finding(location=Location(path="src/auth/login.js", start_line=1))).action is Action.propose
+    assert p.decide(finding(category=Category.iac)).action is Action.propose
+    assert p.decide(finding(severity=Severity.info)).action is Action.skip
+
+
+def test_policy_rule_and_local_only():
+    p = Policy.model_validate(
+        {
+            "rules": [
+                {"match": {"cwe": ["CWE-89"]}, "action": "propose", "name": "sqli to humans"},
+                {"match": {}, "action": "autofix"},
+            ],
+            "models": {"local_only_paths": ["services/payments/**"]},
+        }
+    )
+    d = p.decide(finding(cwe=["CWE-89"]))
+    assert d.action is Action.propose and d.rule == "sqli to humans"
+    assert p.decide(finding(location=Location(path="services/payments/x.py"))).local_only
+
+
+def test_glob():
+    assert glob_match("**/auth/**", "src/auth/tokens.js")
+    assert glob_match("**/auth/**", "auth/tokens.js")
+    assert glob_match(".github/workflows/**", ".github/workflows/ci.yml")
+    assert glob_match("*.lock", "deep/dir/yarn.lock")
+    assert not glob_match("src/*.js", "src/a/b.js")
+
+
+def test_choose_fixed_version():
+    assert choose_fixed_version("4.17.15", ["4.17.19", "4.17.21"]) == "4.17.19"
+    assert choose_fixed_version("1.2.0", ["2.0.1", "1.4.3"]) == "1.4.3"
+    assert choose_fixed_version("3.0.0", ["2.9.9"]) is None
+    assert choose_fixed_version(None, ["1.0.1", "1.0.0"]) == "1.0.0"
+
+
+def test_npm_bump_preserves_formatting(tmp_path):
+    (tmp_path / "package.json").write_text('{\n  "dependencies": {\n    "lodash": "^4.17.15",\n    "x": "1"\n  }\n}\n')
+    f = Finding(
+        tool="snyk",
+        rule_id="SNYK-1",
+        title="pp",
+        category=Category.sca,
+        package=Package(name="lodash", version="4.17.15", fixed_versions=["4.17.21"], manifest="package.json"),
+    )
+    fix = try_bump(tmp_path, f)
+    assert fix and fix.new == "^4.17.21"
+    assert (tmp_path / "package.json").read_text() == (
+        '{\n  "dependencies": {\n    "lodash": "^4.17.21",\n    "x": "1"\n  }\n}\n'
+    )
+
+
+def test_pip_bump(tmp_path):
+    (tmp_path / "requirements.txt").write_text("flask==2.0.1\nJinja2==2.10  # templating\n")
+    f = Finding(
+        tool="osv",
+        rule_id="GHSA",
+        title="x",
+        category=Category.sca,
+        package=Package(name="jinja2", version="2.10", fixed_versions=["2.10.1"], manifest="requirements.txt"),
+    )
+    assert try_bump(tmp_path, f)
+    assert "Jinja2==2.10.1  # templating" in (tmp_path / "requirements.txt").read_text()
+
+
+def test_line_map_follows_edits():
+    before = "a\nb\nc\nd\n"
+    after = "a\nNEW1\nNEW2\nb\nc\nd\n"
+    m = line_map(before, after)
+    assert m[1] == 1 and m[2] == 4 and m[4] == 6
+
+
+def test_matches_tolerates_line_shift():
+    target = finding()
+    moved = finding(location=Location(path="src/a.js", start_line=7))
+    assert matches(target, moved, {5: 7})
+    assert not matches(target, finding(location=Location(path="src/b.js", start_line=5)))
+    # Semgrep prefixes rule ids with the config path; the dotted tail still matches.
+    assert matches(target, finding(rule_id="javascript.lang.security.audit.path-traversal"), None)
+
+
+def test_redact():
+    out = redact({"api_key": "abc", "note": "token sk-ant-" + "a" * 30, "nested": ["AKIAABCDEFGHIJKLMNOP"]})
+    s = json.dumps(out)
+    assert "abc" not in s and "sk-ant" not in s and "AKIA" not in s
+
+
+def test_sarif_fixes_output():
+    f = finding()
+    doc = to_sarif(
+        [
+            {
+                "finding": f,
+                "status": "verified",
+                "summary": "s",
+                "files": {"src/a.js": ("one\ntwo\n", "one\nTWO\nthree\n")},
+            }
+        ]
+    )
+    [res] = doc["runs"][0]["results"]
+    [fix] = res["fixes"]
+    [change] = fix["artifactChanges"]
+    assert change["replacements"][0]["deletedRegion"]["startLine"] == 2
+    assert change["replacements"][0]["insertedContent"]["text"] == "TWO\nthree\n"
+
+
+def test_untrusted_finding_ids_are_replaced():
+    for bad in ("../../etc", "a/b", "", "x" * 100, ".hidden"):
+        f = Finding(id=bad, tool="t", rule_id="r", title="x")
+        assert f.id.startswith("of-")
+    assert Finding(id="CUSTOM-1.2_x", tool="t", rule_id="r", title="x").id == "CUSTOM-1.2_x"
