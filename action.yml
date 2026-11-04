@@ -1,0 +1,81 @@
+name: OpenFix
+description: Fix security findings from any scanner with any model. Every fix ships with proof.
+author: Markus Weldon
+branding:
+  icon: shield
+  color: purple
+
+inputs:
+  reports:
+    description: Space-separated scanner reports (SARIF, Semgrep/Snyk/Trivy/OSV/Gitleaks JSON, GitHub alerts).
+    required: true
+  model:
+    description: Author model as provider:model (overrides the policy), e.g. anthropic:claude-opus-5-5 or openai:gpt-5.
+    required: false
+  reviewer:
+    description: Optional reviewer model from a different provider.
+    required: false
+  policy:
+    description: Policy file (default openfix.yaml in the repository, else built-in defaults).
+    required: false
+  open-prs:
+    description: Open a draft pull request for each verified autofix.
+    default: "true"
+  max:
+    description: Attempt at most this many findings.
+    default: "10"
+  sandbox:
+    description: auto | docker | local. Runners are ephemeral, so local is acceptable here.
+    default: auto
+  working-directory:
+    description: Project directory inside the repository (monorepos).
+    default: "."
+  extra-args:
+    description: Additional arguments for `openfix fix`.
+    default: ""
+
+outputs:
+  results:
+    description: Directory with summary.json, summary.md, openfix.sarif and one receipt per finding.
+    value: ${{ steps.run.outputs.results }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - name: Install OpenFix
+      shell: bash
+      run: pip install --disable-pip-version-check -q "${{ github.action_path }}[all]"
+    - name: Run OpenFix
+      id: run
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        INPUT_MODEL: ${{ inputs.model }}
+        INPUT_REVIEWER: ${{ inputs.reviewer }}
+        INPUT_POLICY: ${{ inputs.policy }}
+        INPUT_OPEN_PRS: ${{ inputs.open-prs }}
+        INPUT_MAX: ${{ inputs.max }}
+        INPUT_SANDBOX: ${{ inputs.sandbox }}
+        INPUT_REPORTS: ${{ inputs.reports }}
+        INPUT_EXTRA: ${{ inputs.extra-args }}
+      run: |
+        out="$RUNNER_TEMP/openfix"
+        args=(fix --repo . --out "$out" --max "$INPUT_MAX" --sandbox "$INPUT_SANDBOX")
+        [ -n "$INPUT_MODEL" ] && args+=(--model "$INPUT_MODEL")
+        [ -n "$INPUT_REVIEWER" ] && args+=(--reviewer "$INPUT_REVIEWER")
+        [ -n "$INPUT_POLICY" ] && args+=(--policy "$INPUT_POLICY")
+        [ "$INPUT_OPEN_PRS" = "true" ] && args+=(--open-prs)
+        read -r -a reports <<< "$INPUT_REPORTS"
+        read -r -a extra <<< "$INPUT_EXTRA"
+        openfix "${args[@]}" "${extra[@]}" "${reports[@]}"
+        echo "results=$out" >> "$GITHUB_OUTPUT"
+        [ -f "$out/summary.md" ] && cat "$out/summary.md" >> "$GITHUB_STEP_SUMMARY"
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: openfix-results
+        path: ${{ runner.temp }}/openfix
+        if-no-files-found: ignore

@@ -1,6 +1,16 @@
-node_modules/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
 dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+node_modules/
 .env
 .openfix/
+.openfix-scan/
 *.log
 .DS_Store

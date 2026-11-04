@@ -1,20 +1,44 @@
-name: OpenFix CI
+name: CI
 on:
   push:
+    branches: [main]
   pull_request:
 permissions:
   contents: read
 jobs:
-  workflow:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install -e '.[all,dev]'
+      - run: ruff check src tests
+      - run: ruff format --check src tests
+      - run: mypy src
+      - run: pytest -q
+
+  example:
+    # The full pipeline on the example app with real Semgrep and real tests, no API key.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - run: npm test
-      - run: npm run typecheck
-      - run: npm run build
-      - run: npm run demo -- --out /tmp/openfix-ci-workbench.html
+          node-version: "22"
+      - run: pip install -e . semgrep
+      - name: Fix one finding with the scripted provider
+        working-directory: examples/vulnerable-app
+        run: |
+          openfix fix findings/semgrep.sarif --only path-traversal-path-join-var \
+            --model scripted:demo/path-traversal.script.yaml --sandbox local \
+            --out "$RUNNER_TEMP/openfix" --fail-on-unfixed
+          openfix receipt verify "$RUNNER_TEMP"/openfix/of-*/ --repo .
+          cat "$RUNNER_TEMP/openfix/summary.md" >> "$GITHUB_STEP_SUMMARY"
