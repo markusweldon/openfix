@@ -1,0 +1,46 @@
+# A recorded tool-call script for the `scripted` provider, so the full pipeline (rescan, tests,
+# differential regression test, receipt) can be tried without an API key:
+#
+#   openfix fix findings/semgrep.sarif --only path-traversal-path-join-var \
+#     --model scripted:demo/path-traversal.script.yaml --sandbox local
+- tool: read_file
+  args: { path: src/files.js }
+- tool: edit_file
+  args:
+    path: src/files.js
+    old_text: |
+      function readUserFile(userPath) {
+        var base = path.join(__dirname, "..", "data");
+        var target = path.join(base, userPath);
+        return fs.readFileSync(target, "utf8");
+      }
+    new_text: |
+      function readUserFile(userPath) {
+        var base = path.resolve(__dirname, "..", "data");
+        var target = path.resolve(base, String(userPath));
+        if (target !== base && !target.startsWith(base + path.sep)) {
+          throw new Error("Path escapes the data directory");
+        }
+        return fs.readFileSync(target, "utf8");
+      }
+- tool: write_file
+  args:
+    path: test/files-traversal.test.js
+    content: |
+      var test = require("node:test");
+      var assert = require("node:assert/strict");
+      var files = require("../src/files");
+
+      test("readUserFile rejects paths outside the data directory", function () {
+        assert.throws(function () {
+          files.readUserFile("../package.json");
+        }, /escapes the data directory/);
+      });
+- tool: run_tests
+- tool: rescan
+- tool: submit
+  args:
+    summary: Resolve the requested path against the data directory and reject any result outside it.
+    root_cause: path.join() normalises "../" segments, so user input could climb out of the data directory.
+    regression_test: test/files-traversal.test.js
+    confidence: high
