@@ -200,7 +200,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: pip install semgrep && semgrep scan --config p/default --sarif -o semgrep.sarif || true
-      - uses: markusweldon/openfix@main
+      - uses: markusweldon/openfix@v0.3.0
         with:
           reports: semgrep.sarif
           model: anthropic:claude-opus-5-5

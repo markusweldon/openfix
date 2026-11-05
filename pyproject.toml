@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "openfix"
-version = "0.3.0.dev0"
+version = "0.3.0"
 description = "Model-agnostic security remediation agent. Every fix ships with proof."
 readme = "README.md"
 license = "MIT"

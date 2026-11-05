@@ -3,7 +3,7 @@ description: Fix security findings from any scanner with any model. Every fix sh
 author: Markus Weldon
 branding:
   icon: shield
-  color: purple
+  color: green
 
 inputs:
   reports:
