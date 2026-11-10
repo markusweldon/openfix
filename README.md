@@ -28,6 +28,13 @@ Every fix comes with a **receipt**: a signed, re-checkable record of what change
 
 <br>
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/implementation-dark.svg">
+  <img alt="OpenFix implementation. Scanners in: Snyk, Semgrep, GitHub CodeQL and Dependabot, Trivy, or any SARIF, plus openfix.yaml. OpenFix core: ingest.py, policy.py and engine.py hand each finding to a disposable git worktree (gitutil.py), where agent/loop.py talks to Claude, Gemini, OpenAI, Grok or Ollama through providers/ using tool calls only. verify.py then runs rescan, tests, regression test and review, using sandbox.py (Docker, no network) and scanners.py. Results out: receipt.json, patch.diff, openfix.sarif, summary.md and a GitHub draft pull request. Runs as a CLI or GitHub Action on Python 3.10+." src="docs/assets/implementation-light.svg" width="100%">
+</picture>
+
+<br>
+
 ## Why OpenFix
 
 <table>
@@ -255,3 +262,5 @@ Issues and pull requests are welcome; start with [CONTRIBUTING.md](CONTRIBUTING.
 ## License
 
 [MIT](LICENSE)
+
+<sub>Brand icons in the diagrams come from [Simple Icons](https://simpleicons.org) (CC0) and the [Semgrep repository](https://github.com/semgrep/semgrep). All trademarks belong to their owners, and their use here doesn't imply endorsement.</sub>
