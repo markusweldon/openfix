@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """Record the README terminal demo (docs/assets/demo-{dark,light}.gif) with VHS.
 
 Run from the repository root:  python docs/demo/record.py
@@ -72,78 +73,102 @@ THEMES = {
 
 APP = repo / "examples" / "vulnerable-app"
 VENV = repo / ".venv" / "bin"
+HOLD = "Wait+Line@60s /❯ *$/"
 
 
 def q(s: str) -> str:
     return s.replace("\\", "\\\\").replace('"', '\\"')
 
 
+def rc(cfg: dict) -> str:
+    """Shell setup: prompt, plus `scene` and `card` helpers that draw the titles."""
+    t = cfg["theme"]
+
+    def rgb(hexcolor: str, ground: int) -> str:
+        r, g, b = (int(hexcolor[i : i + 2], 16) for i in (1, 3, 5))
+        return f"\\e[{ground};2;{r};{g};{b}m"
+
+    badge = rgb(cfg["page"], 38) + rgb(t["magenta"], 48)
+    accent = rgb(t["magenta"], 38)
+    green = rgb(t["green"], 38)
+    muted = rgb(t["brightBlack"], 38)
+    return f"""export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 BASH_SILENCE_DEPRECATION_WARNING=1
+export PATH="{VENV}:$PATH"
+cd "{APP}"
+PS1='\\[\\e[90m\\]vulnerable-app \\[\\e[35m\\]❯\\[\\e[0m\\] '
+PS2='  '
+scene() {{ clear; printf '\\e[?25h\\n {badge}\\e[1m  %s  \\e[0m  \\e[1m%s\\e[0m\\n\\n {muted}%s\\e[0m\\n\\n' "$1" "$2" "$3"; }}
+card() {{ clear; printf '\\e[?25l\\n\\n\\n\\n\\n'; for line in "$@"; do printf '    %b\\e[0m\\n\\n' "$line"; done; }}
+title() {{ card "{accent}\\e[1mOpenFix" "\\e[1mFrom scanner finding to verified fix, with proof." "{muted}One finding from the example app, start to finish." "{muted}Model calls are replayed; Semgrep and the tests run live."; }}
+done_card() {{ card "{green}\\e[1m✔  Verified fix" "Semgrep no longer reports it.   The tests pass." "A new regression test fails before the fix and passes after." "Signed receipt.json with every check, ready for a draft PR." "{accent}github.com/markusweldon/openfix"; }}
+"""
+
+
 def tape(name: str, cfg: dict) -> str:
+    def hidden(cmd: str) -> list[str]:
+        # Enter first releases a title card's `read`; it is a no-op at a prompt.
+        return ["Hide", "Enter", f'Type "{q(cmd)}"', "Enter", "Sleep 300ms", "Show"]
+
+    def run(cmd: str, hold: str) -> list[str]:
+        return [f"Type `{cmd}`", "Sleep 400ms", "Enter", HOLD, f"Sleep {hold}"]
+
     lines = [
         f'Output "{gif_dir / f"demo-{name}.gif"}"',
         'Set Shell "bash"',
         'Set FontFamily "Menlo"',
-        "Set FontSize 16",
-        "Set LineHeight 1.35",
-        "Set Width 1280",
-        "Set Height 880",
-        "Set Padding 28",
+        "Set FontSize 21",
+        "Set LineHeight 1.3",
+        "Set Width 1400",
+        "Set Height 1180",
+        "Set Padding 32",
         "Set Margin 24",
         f'Set MarginFill "{cfg["page"]}"',
         "Set WindowBar Colorful",
         "Set WindowBarSize 40",
         "Set BorderRadius 12",
-        "Set Framerate 24",
-        "Set TypingSpeed 28ms",
+        "Set Framerate 20",
+        "Set TypingSpeed 22ms",
         "Set CursorBlink false",
         f"Set Theme {json.dumps(cfg['theme'])}",
         "",
         "Hide",
-        f'Type "source {q(str(work / "demo.bashrc"))}"',
-        "Enter",
-        'Type "rm -rf .openfix/demo && clear"',
+        f'Type "source {q(str(work / f"demo-{name}.bashrc"))} && rm -rf .openfix/demo"',
         "Enter",
         "Sleep 300ms",
         "Show",
+        *hidden("title; read -rs"),
+        "Sleep 4.5s",
         "",
-        "Sleep 600ms",
-        'Type "# Fix one finding. Model calls are replayed; Semgrep and the tests run live."',
-        "Enter",
-        "Sleep 700ms",
+        *hidden("scene 1/4 'The finding' 'Semgrep flags a path traversal: user input reaches readFileSync.'"),
+        "Sleep 1.2s",
+        *run("bat -n -r 8:12 --paging=never --theme=ansi src/files.js", "3.5s"),
+        "",
+        *hidden(
+            "scene 2/4 'The fix' 'OpenFix gives it to the model in a throwaway worktree, then checks the result itself.'"
+        ),
+        "Sleep 1.2s",
         r"Type `openfix fix findings/semgrep.sarif --only path-traversal-path-join-var \`",
         "Enter",
         'Type "  --model scripted:demo/path-traversal.script.yaml --sandbox local --out .openfix/demo"',
         "Sleep 400ms",
         "Enter",
-        "Wait+Line@60s /❯ *$/",
-        "Sleep 2.5s",
+        HOLD,
+        "Sleep 3.5s",
         "",
-        'Type "clear"',
-        "Enter",
-        'Type "# The patch, plus the regression test it had to write"',
-        "Enter",
-        "Sleep 300ms",
-        r"Type `grep -vE '^(diff|index|new file)' .openfix/demo/of-*/patch.diff | bat -pf -l diff --theme=ansi`",
-        "Sleep 300ms",
-        "Enter",
-        "Wait+Line@10s /❯ *$/",
-        "Sleep 4.5s",
-        "",
-        'Type "clear"',
-        "Enter",
-        'Type "# Every check the policy required, from the receipt"',
-        "Enter",
-        "Sleep 300ms",
-        r"""Type `jq -r '.predicate.checks[] | "\u2714 \(.name): \(.detail)"' .openfix/demo/of-*/receipt.json`""",
-        "Sleep 300ms",
-        "Enter",
-        "Wait+Line@10s /❯ *$/",
+        *hidden("scene 3/4 'The patch' 'A minimal change, plus the regression test the policy requires.'"),
         "Sleep 1.2s",
-        'Type "openfix receipt verify .openfix/demo/of-*/ --repo ."',
-        "Sleep 300ms",
-        "Enter",
-        "Wait+Line@20s /❯ *$/",
-        "Sleep 4s",
+        *run(
+            "grep -vE '^(diff|index|new file)' .openfix/demo/of-*/patch.diff | bat -pf --paging=never -l diff --theme=ansi",
+            "6s",
+        ),
+        "",
+        *hidden("scene 4/4 'The proof' 'Every check the policy required, recorded in a receipt anyone can re-verify.'"),
+        "Sleep 1.2s",
+        *run(r"""jq -r '.predicate.checks[] | "\(.status)  \(.name)"' .openfix/demo/of-*/receipt.json""", "1.5s"),
+        *run("openfix receipt verify .openfix/demo/of-*/ --repo .", "4.5s"),
+        "",
+        *hidden("done_card; read -rs"),
+        "Sleep 6s",
         "",
         "Hide",
         'Type "rm -rf .openfix/demo"',
@@ -152,16 +177,9 @@ def tape(name: str, cfg: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-BASHRC = f"""export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 BASH_SILENCE_DEPRECATION_WARNING=1
-export PATH="{VENV}:$PATH"
-cd "{APP}"
-PS1='\\[\\e[90m\\]vulnerable-app \\[\\e[35m\\]❯\\[\\e[0m\\] '
-PS2='  '
-"""
-
 if __name__ == "__main__":
-    (work / "demo.bashrc").write_text(BASHRC)
     for name, cfg in THEMES.items():
+        (work / f"demo-{name}.bashrc").write_text(rc(cfg))
         path = work / f"demo-{name}.tape"
         path.write_text(tape(name, cfg))
         subprocess.run(["vhs", str(path)], check=True)
