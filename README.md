@@ -22,6 +22,15 @@ Every fix comes with a **receipt**: a signed, re-checkable record of what change
 <br>
 
 <picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/demo-dark.gif">
+  <img alt="Terminal demo on the example app. openfix fix takes one Semgrep path-traversal finding, and the replayed model writes a patch plus a regression test. Semgrep, the tests and the regression test run live and all pass, so the fix is verified. The patch is shown as a diff, the receipt lists each passed check, and openfix receipt verify confirms the digests, the base commit and that the patch applies." src="docs/assets/demo-light.gif" width="100%">
+</picture>
+
+<sub>Recorded from <code>examples/vulnerable-app</code> with <a href="docs/demo/record.py"><code>docs/demo/record.py</code></a>. The model's tool calls are replayed so anyone can rerun it without an API key; Semgrep, the tests and the receipt check run for real.</sub>
+
+<br>
+
+<picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/architecture-dark.svg">
   <img alt="OpenFix pipeline. Ingest: any scanner report is normalized. Policy: openfix.yaml decides autofix, propose or skip. Agent: any model edits a disposable worktree using policy-checked tools only. Verify: rescan, tests, regression test and optional review, independent of the agent. Ship: receipt.json, patch.diff, SARIF fixes and a draft PR." src="docs/assets/architecture-light.svg" width="100%">
 </picture>
