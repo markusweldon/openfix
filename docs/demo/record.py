@@ -71,7 +71,8 @@ THEMES = {
     ),
 }
 
-APP = repo / "examples" / "vulnerable-app"
+CLEAN = work / "checkout"  # a clean worktree of HEAD, so OpenFix sees no local changes
+APP = CLEAN / "examples" / "vulnerable-app"
 VENV = repo / ".venv" / "bin"
 HOLD = "Wait+Line@60s /❯ *$/"
 
@@ -119,7 +120,7 @@ def tape(name: str, cfg: dict) -> str:
         "Set FontSize 21",
         "Set LineHeight 1.3",
         "Set Width 1400",
-        "Set Height 1180",
+        "Set Height 1300",
         "Set Padding 32",
         "Set Margin 24",
         f'Set MarginFill "{cfg["page"]}"',
@@ -132,7 +133,7 @@ def tape(name: str, cfg: dict) -> str:
         f"Set Theme {json.dumps(cfg['theme'])}",
         "",
         "Hide",
-        f'Type "source {q(str(work / f"demo-{name}.bashrc"))} && rm -rf .openfix/demo"',
+        f'Type "source {q(str(work / f"demo-{name}.bashrc"))} && rm -rf out"',
         "Enter",
         "Sleep 300ms",
         "Show",
@@ -149,7 +150,7 @@ def tape(name: str, cfg: dict) -> str:
         "Sleep 1.2s",
         r"Type `openfix fix findings/semgrep.sarif --only path-traversal-path-join-var \`",
         "Enter",
-        'Type "  --model scripted:demo/path-traversal.script.yaml --sandbox local --out .openfix/demo"',
+        'Type "  --model scripted:demo/path-traversal.script.yaml --sandbox local --out out"',
         "Sleep 400ms",
         "Enter",
         HOLD,
@@ -158,29 +159,31 @@ def tape(name: str, cfg: dict) -> str:
         *hidden("scene 3/4 'The patch' 'A minimal change, plus the regression test the policy requires.'"),
         "Sleep 1.2s",
         *run(
-            "grep -vE '^(diff|index|new file)' .openfix/demo/of-*/patch.diff | bat -pf --paging=never -l diff --theme=ansi",
+            "grep -vE '^(diff|index|new file)' out/of-*/patch.diff | bat -pf --paging=never -l diff --theme=ansi",
             "6s",
         ),
         "",
         *hidden("scene 4/4 'The proof' 'Every check the policy required, recorded in a receipt anyone can re-verify.'"),
         "Sleep 1.2s",
-        *run(r"""jq -r '.predicate.checks[] | "\(.status)  \(.name)"' .openfix/demo/of-*/receipt.json""", "1.5s"),
-        *run("openfix receipt verify .openfix/demo/of-*/ --repo .", "4.5s"),
+        *run(r"""jq -r '.predicate.checks[] | "\(.status)  \(.name)"' out/of-*/receipt.json""", "1.5s"),
+        *run("openfix receipt verify out/of-*/ --repo .", "4.5s"),
         "",
         *hidden("done_card; read -rs"),
         "Sleep 6s",
         "",
         "Hide",
-        'Type "rm -rf .openfix/demo"',
+        'Type "rm -rf out"',
         "Enter",
     ]
     return "\n".join(lines) + "\n"
 
 
 if __name__ == "__main__":
+    subprocess.run(["git", "-C", str(repo), "worktree", "add", "--detach", str(CLEAN), "HEAD"], check=True)
     for name, cfg in THEMES.items():
         (work / f"demo-{name}.bashrc").write_text(rc(cfg))
         path = work / f"demo-{name}.tape"
         path.write_text(tape(name, cfg))
         subprocess.run(["vhs", str(path)], check=True)
         print(gif_dir / f"demo-{name}.gif")
+    subprocess.run(["git", "-C", str(repo), "worktree", "remove", "--force", str(CLEAN)], check=True)
