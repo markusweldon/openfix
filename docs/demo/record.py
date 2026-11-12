@@ -75,7 +75,7 @@ THEMES = {
 CLEAN = work / "checkout"  # a clean worktree of HEAD, so OpenFix sees no local changes
 APP = CLEAN / "examples" / "vulnerable-app"
 VENV = repo / ".venv" / "bin"
-SPEED = 3  # VHS plays the recording back this much faster; sleeps and typing are scaled to compensate
+SPEED = 6  # VHS plays the recording back this much faster; sleeps and typing are scaled to compensate
 HOLD = "Wait+Line@300s /❯ *$/"
 
 
@@ -121,7 +121,7 @@ def tape(name: str, cfg: dict) -> str:
         "Set FontSize 22",
         "Set LineHeight 1.35",
         "Set Width 1400",
-        "Set Height 760",
+        "Set Height 700",
         "Set Padding 32",
         "Set Margin 24",
         f'Set MarginFill "{cfg["page"]}"',
