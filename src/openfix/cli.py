@@ -8,12 +8,20 @@ import sys
 from pathlib import Path
 
 from . import __version__
+from .console import paint
 from .engine import Engine, Options
 from .ingest import UnsupportedFormat, load_files
 from .policy import EXAMPLE_POLICY, load_policy
 from .providers import ProviderError, describe_providers
 from .receipt import verify_receipt
 from .sandbox import SandboxUnavailable
+
+
+def _rel(p: Path) -> str:
+    try:
+        return str(p.resolve().relative_to(Path.cwd().resolve()))
+    except ValueError:
+        return str(p)
 
 
 def _table(rows: list[list[str]], header: list[str]) -> str:
@@ -101,8 +109,9 @@ def cmd_fix(a: argparse.Namespace) -> int:
     by: dict[str, int] = {}
     for o in outcomes:
         by[o.status] = by.get(o.status, 0) + 1
-    print(f"\n{', '.join(f'{v} {k}' for k, v in sorted(by.items()))}")
-    print(f"tokens: {engine.spent_tokens:,}   cost: ${engine.spent_usd:.2f}   results: {engine.out}")
+    counts = ", ".join(f"{v} {k}" for k, v in sorted(by.items()))
+    spent = f"tokens {engine.spent_tokens:,}   cost ${engine.spent_usd:.2f}"
+    print(f"\n{paint(counts, 'bold', stream=sys.stdout)}   {spent}   results {_rel(engine.out)}")
     if a.fail_on_unfixed and any(o.status not in ("verified", "skipped") for o in outcomes):
         return 1
     return 0

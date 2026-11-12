@@ -6,6 +6,13 @@ It replays a script of tool calls (a JSON/YAML list) instead of calling a model:
       args: {path: src/files.js, old_text: "...", new_text: "..."}
     - tool: submit
       args: {summary: "..."}
+
+A script can also map rule ids (or finding ids) to step lists, so one run can replay a fix per finding:
+
+    javascript/CommandInjection: [ ... ]
+    path-traversal-path-join-var: [ ... ]
+
+Each conversation uses the entry whose key appears in its task; a finding with no entry gets no steps.
 """
 
 from __future__ import annotations
@@ -23,7 +30,7 @@ class ScriptedProvider:
     name = "scripted"
     local = True
 
-    def __init__(self, model: str, steps: list[dict[str, Any]] | None = None) -> None:
+    def __init__(self, model: str, steps: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None) -> None:
         self.model = model
         if steps is None:
             cwd = Path.cwd().resolve()
@@ -34,7 +41,7 @@ class ScriptedProvider:
                     "--model scripted:path/to/script.yaml"
                 )
             steps = yaml.safe_load(path.read_text(encoding="utf-8")) or []
-        self.steps = steps
+        self.steps: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] = steps
         self.transcript: list[dict[str, Any]] = []
 
     def start(self, system: str, tools: list[ToolSpec]) -> Conversation:
@@ -45,13 +52,19 @@ class _ScriptedConversation:
     def __init__(self, p: ScriptedProvider, system: str) -> None:
         self.p = p
         self.i = 0
+        self.steps: list[dict[str, Any]] | None = p.steps if isinstance(p.steps, list) else None
         p.transcript.append({"system": system})
 
     def send(self, *, user: str | None = None, tool_results: list[ToolResult] | None = None) -> Turn:
         self.p.transcript.append({"user": user, "tool_results": [r.__dict__ for r in tool_results or []]})
-        if self.i >= len(self.p.steps):
+        if self.steps is None:
+            # Pick this finding's entry: the longest key that appears in the task, so ids win over prefixes.
+            assert isinstance(self.p.steps, dict)
+            keys = sorted((k for k in self.p.steps if user and k in user), key=len, reverse=True)
+            self.steps = list(self.p.steps[keys[0]]) if keys else []
+        if self.i >= len(self.steps):
             return Turn(text="(script finished)", tool_calls=[], stop="end", usage=Usage(10, 5))
-        step = self.p.steps[self.i]
+        step = self.steps[self.i]
         self.i += 1
         if "text" in step and "tool" not in step:
             return Turn(text=str(step["text"]), tool_calls=[], stop="end", usage=Usage(10, 5))

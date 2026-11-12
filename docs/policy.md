@@ -93,10 +93,19 @@ pricing:
 | `require` | `[rescan, tests]` | checks that must **pass** for `verified`; also `regression_test`, `review` |
 | `tests` | auto-detected | `{command, timeout}`: npm test, pytest, go test, cargo test, mvn, gradle |
 | `setup` | auto-detected | `{command, timeout}` run once with network access, e.g. `npm ci --ignore-scripts` |
-| `scanner` | from the finding's tool | a preset name (`semgrep`, `snyk-code`, `snyk`, `trivy`, `osv-scanner`, `gitleaks`, `bandit`) or `{command}` that writes SARIF to `{output}` |
+| `scanner` | from the finding's tool | a preset name (`semgrep`, `snyk-code`, `snyk`, `trivy`, `osv-scanner`, `gitleaks`, `bandit`), a `{command}` that writes SARIF to `{output}`, or a mapping from preset name to either (below) |
 
 A fix is `verified` only when every required check passed, `failed` when any check failed, and `unverified`
 otherwise (for example, the scanner isn't installed, or the tests already failed before the change).
+
+When one run mixes scanners, map each preset to how it should rescan. Tools without an entry use their own preset:
+
+```yaml
+verify:
+  scanner:
+    semgrep: { command: "semgrep scan --config .semgrep.yml --sarif --output {output} src" }
+    snyk-code: snyk-code
+```
 
 ## Sandbox and pull requests
 

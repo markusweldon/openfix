@@ -128,3 +128,41 @@ def test_untrusted_finding_ids_are_replaced():
         f = Finding(id=bad, tool="t", rule_id="r", title="x")
         assert f.id.startswith("of-")
     assert Finding(id="CUSTOM-1.2_x", tool="t", rule_id="r", title="x").id == "CUSTOM-1.2_x"
+
+
+def test_scanner_can_be_chosen_per_tool():
+    from openfix.engine import scanner_spec
+    from openfix.policy import Command
+
+    p = Policy.model_validate(
+        {"verify": {"scanner": {"semgrep": {"command": "semgrep --config r.yml {output}"}, "snyk-code": "snyk-code"}}}
+    )
+    semgrep = scanner_spec(p.verify.scanner, finding(tool="Semgrep OSS"))
+    assert isinstance(semgrep, Command) and semgrep.command.startswith("semgrep --config r.yml")
+    assert scanner_spec(p.verify.scanner, finding(tool="SnykCode")) == "snyk-code"
+    assert scanner_spec(p.verify.scanner, finding(tool="trivy")) is None  # falls back to the tool's preset
+    single = Policy.model_validate({"verify": {"scanner": {"command": "x {output}"}}})
+    assert isinstance(single.verify.scanner, Command)
+
+
+def test_scripted_provider_picks_steps_per_finding():
+    from openfix.providers.scripted import ScriptedProvider
+
+    p = ScriptedProvider("demo", steps={"rule-a": [{"tool": "submit", "args": {"summary": "a"}}], "rule-b": []})
+    turn = p.start("sys", []).send(user='{"rule_id": "rule-a"}')
+    assert turn.tool_calls[0].name == "submit" and turn.tool_calls[0].arguments == {"summary": "a"}
+    assert not p.start("sys", []).send(user='{"rule_id": "rule-b"}').tool_calls
+    assert not p.start("sys", []).send(user='{"rule_id": "other"}').tool_calls
+
+
+def test_console_lines_are_plain_without_a_terminal(monkeypatch):
+    from openfix.console import finding_line, result_line
+
+    monkeypatch.delenv("FORCE_COLOR", raising=False)
+    line = finding_line(finding(tool="SnykCode", title="Command Injection", severity=Severity.high))
+    assert line == "→ Snyk Code  high    Command Injection  src/a.js:5"
+    assert "x.path-traversal" in finding_line(finding(tool="Semgrep OSS", title="Semgrep Finding: x.path-traversal"))
+    ok = result_line("verified", "", [("rescan", "passed"), ("regression_test", "passed")])
+    assert ok == "  ✔ rescan   ✔ regression test   → verified"
+    bad = result_line("failed", "rescan: failed", [("rescan", "failed"), ("tests", "not_run")])
+    assert bad == "  ✘ rescan   · tests   → failed\n    rescan: failed"
