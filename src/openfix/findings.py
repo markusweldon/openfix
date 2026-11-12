@@ -88,6 +88,13 @@ class Finding(BaseModel):
         blob = json.dumps([self.tool.lower(), self.rule_id, place], sort_keys=True)
         return "of-" + hashlib.sha256(blob.encode()).hexdigest()[:12]
 
+    def display_title(self) -> str:
+        """The title, unless the scanner only filled in a placeholder (Semgrep: "Semgrep Finding: <rule>")."""
+        generic = f"{self.tool.split()[0].lower()} finding" if self.tool else ""
+        if not self.title or (generic and self.title.lower().startswith(generic)):
+            return self.rule_id
+        return self.title
+
     def short(self) -> str:
         where = ""
         if self.location:

@@ -35,8 +35,7 @@ def tool_label(tool: str) -> str:
 
 def finding_line(f: Finding) -> str:
     """One line per finding: scanner, severity, what it is, where."""
-    title = f.title if f.title and not f.title.lower().startswith(f"{f.tool.lower().split()[0]} finding") else ""
-    what = title or f.rule_id
+    what = f.display_title()
     where = ""
     if f.location:
         where = f.location.path + (f":{f.location.start_line}" if f.location.start_line else "")
@@ -62,8 +61,8 @@ def result_line(status: str, detail: str, checks: list[tuple[str, str]], pr_url:
         glyph, color = _GLYPH.get(st, ("·", "dim"))
         parts.append(paint(f"{glyph} {name.replace('_', ' ')}", color))
     line = "  " + "   ".join(parts + [paint(f"→ {status}", "bold", _STATUS.get(status, "red"))])
-    if pr_url:
-        line += f"  {pr_url}"
     if status != "verified" and detail:
         line += "\n    " + paint(detail, "dim")
+    if pr_url:
+        line += "\n    " + paint("draft PR", "dim") + f" {pr_url}"
     return line

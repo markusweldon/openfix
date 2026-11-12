@@ -391,9 +391,9 @@ class Engine:
                     o.pr_url = open_pull_request(
                         work,
                         branch=f"{pr.branch_prefix}{f.id}",
-                        title=f"fix(security): {f.title}"[:120],
+                        title=f"fix(security): {f.display_title()}"[:120],
                         body=body,
-                        commit_message=f"fix(security): {f.title}\n\n{summary}\n\nOpenFix-Receipt: "
+                        commit_message=f"fix(security): {f.display_title()}\n\n{summary}\n\nOpenFix-Receipt: "
                         f"sha256:{receipt_digest}",
                         labels=pr.labels,
                         draft=pr.draft,

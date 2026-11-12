@@ -71,7 +71,8 @@ def open_pull_request(
     token = _token()
     slug = repo_slug(work)
     base_branch = base_branch or default_branch(slug, token)
-    git(work, "switch", "-c", branch)
+    # -C: a rerun reuses the branch name; the worktree is disposable and the branch is OpenFix's own.
+    git(work, "switch", "-C", branch)
     git(work, "add", "-A")
     git(
         work,
