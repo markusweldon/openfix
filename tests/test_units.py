@@ -164,5 +164,54 @@ def test_console_lines_are_plain_without_a_terminal(monkeypatch):
     assert "x.path-traversal" in finding_line(finding(tool="Semgrep OSS", title="Semgrep Finding: x.path-traversal"))
     ok = result_line("verified", "", [("rescan", "passed"), ("regression_test", "passed")])
     assert ok == "  ✔ rescan   ✔ regression test   → verified"
+    pr = result_line("verified", "", [("tests", "passed")], "https://github.com/o/r/pull/1")
+    assert pr == "  ✔ tests   → verified\n    draft PR https://github.com/o/r/pull/1"
     bad = result_line("failed", "rescan: failed", [("rescan", "failed"), ("tests", "not_run")])
     assert bad == "  ✘ rescan   · tests   → failed\n    rescan: failed"
+
+
+def test_open_pull_request_twice_reuses_the_branch(tmp_path, monkeypatch):
+    """A rerun in the same clone must not fail because the PR branch already exists locally."""
+    import subprocess
+
+    from openfix import github
+
+    def sh(*args, cwd):
+        subprocess.run(args, cwd=cwd, check=True, capture_output=True)
+
+    remote, repo = tmp_path / "remote.git", tmp_path / "repo"
+    sh("git", "init", "-q", "--bare", str(remote), cwd=tmp_path)
+    sh("git", "init", "-q", "-b", "main", str(repo), cwd=tmp_path)
+    (repo / "a.txt").write_text("a\n")
+    sh("git", "add", "-A", cwd=repo)
+    sh("git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "--no-verify", "-qm", "init", cwd=repo)
+    sh("git", "remote", "add", "origin", str(remote), cwd=repo)
+
+    class FakeResponse:
+        status_code, text = 201, ""
+
+        def json(self):
+            return {"html_url": "https://github.com/o/r/pull/1", "number": 1}
+
+    class FakeClient:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def post(self, *a, **kw):
+            return FakeResponse()
+
+    monkeypatch.setenv("GITHUB_TOKEN", "test")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "o/r")
+    monkeypatch.setattr(github, "_client", lambda token: FakeClient())
+    for n in (1, 2):
+        work = tmp_path / f"wt{n}"
+        sh("git", "worktree", "add", "-q", "--detach", str(work), "main", cwd=repo)
+        (work / "a.txt").write_text(f"fix {n}\n")
+        url = github.open_pull_request(
+            work, branch="openfix/x", title="t", body="b", commit_message="m", labels=[], draft=True, base_branch="main"
+        )
+        assert url == "https://github.com/o/r/pull/1"
+        sh("git", "worktree", "remove", "--force", str(work), cwd=repo)

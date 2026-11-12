@@ -37,10 +37,10 @@ Every fix comes with a **receipt**: a signed, re-checkable record of what change
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/demo-dark.gif">
-  <img alt="Terminal demo. Snyk Code found a command injection in /ping and Semgrep found a path traversal in readUserFile. One openfix fix command takes both reports. For each finding it shows rescan, tests and regression test passed, then verified. It ends on: 2 scanners in, 2 verified fixes out." src="docs/assets/demo-light.gif" width="100%">
+  <img alt="Terminal demo. Snyk Code found a command injection in /ping and Semgrep found a path traversal in readUserFile. One openfix fix command takes both reports. For each finding it shows rescan, tests and regression test passed, then verified, with a link to the draft pull request it opened. The demo then shows that pull request on GitHub, with the finding, the change and a table of passed checks. It ends on: 2 scanners in, 2 verified fixes out." src="docs/assets/demo-light.gif" width="100%">
 </picture>
 
-Demo example from <code>examples/vulnerable-app</code> with <a href="docs/demo/record.py"><code>docs/demo/record.py</code></a>. The model's tool calls are replayed so anyone can rerun it without an API key; Snyk Code, Semgrep and the tests run for real. Waiting is sped up.
+Demo example from <code>examples/vulnerable-app</code> with <a href="docs/demo/record.py"><code>docs/demo/record.py</code></a>. The model's tool calls are replayed so anyone can rerun it without an API key; Snyk Code, Semgrep, the tests and GitHub are real. The pull request in the demo is live: <a href="https://github.com/markusweldon/openfix-demo/pull/2">markusweldon/openfix-demo#2</a>. Waiting is sped up.
 
 <br>
 
