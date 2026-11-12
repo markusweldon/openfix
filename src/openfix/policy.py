@@ -103,7 +103,9 @@ class Verify(Strict):
         default_factory=lambda: ["rescan", "tests"]  # type: ignore[arg-type]
     )
     tests: Command | None = None  # auto-detected when omitted
-    scanner: Command | str | None = None  # preset name (semgrep, osv-scanner, trivy, gitleaks) or command
+    # A preset name (semgrep, snyk-code, osv-scanner, ...) or a command, or a mapping from preset name to
+    # either, so each finding is rescanned by its own scanner: {semgrep: {command: ...}, snyk-code: snyk-code}
+    scanner: Command | str | dict[str, Command | str] | None = Field(default=None, union_mode="left_to_right")
     setup: Command | None = None  # e.g. "npm ci --ignore-scripts", run once before tests
 
 
@@ -295,7 +297,8 @@ budgets:
 verify:
   require: [rescan, tests]            # also: regression_test, review
   # tests: { command: "npm test" }    # auto-detected when omitted
-  # scanner: semgrep                  # preset, or { command: "... {output}" } writing SARIF to {output}
+  # scanner: semgrep                  # preset, { command: "... {output}" } writing SARIF to {output},
+  #                                   # or per tool: { semgrep: {...}, snyk-code: snyk-code }
 
 sandbox:
   backend: auto                       # docker when available; "local" runs commands on this machine

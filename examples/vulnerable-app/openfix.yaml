@@ -23,7 +23,11 @@ verify:
   tests: { command: "node --test test/*.test.js" }
   setup: { command: "true" }          # the unit tests need no npm install
   scanner:
-    command: "semgrep scan --config .semgrep.yml --sarif --output {output} --metrics off --quiet --disable-version-check src"
+    # Each finding is rescanned by the scanner that reported it. Semgrep uses the local rules so the
+    # demo runs offline; Snyk Code findings use the snyk-code preset (needs `snyk auth` or SNYK_TOKEN).
+    semgrep:
+      command: "semgrep scan --config .semgrep.yml --sarif --output {output} --metrics off --quiet --disable-version-check src"
+    snyk-code: snyk-code
 
 sandbox:
   backend: auto

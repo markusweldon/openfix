@@ -13,6 +13,7 @@ from typing import Any
 
 from . import providers
 from .agent import Workspace, run_agent
+from .console import finding_line, result_line
 from .deps import try_bump
 from .findings import Finding
 from .github import PublishError, open_pull_request
@@ -22,7 +23,7 @@ from .receipt import make_receipt, sha256, write_receipt
 from .report import pr_body, summary_markdown
 from .sandbox import Sandbox, make_sandbox
 from .sarif_out import to_sarif
-from .scanners import SCAN_DIR, Scanner
+from .scanners import SCAN_DIR, Scanner, preset_for
 from .verify import (
     Check,
     check_regression_test,
@@ -85,6 +86,13 @@ Log = Callable[[str], None]
 
 def _default_log(msg: str) -> None:
     print(msg, file=sys.stderr, flush=True)
+
+
+def scanner_spec(spec: Any, f: Finding) -> Any:
+    """``verify.scanner`` may map scanner presets to commands; other tools fall back to their preset."""
+    if isinstance(spec, dict):
+        spec = spec.get(preset_for(f) or f.tool.lower())
+    return spec
 
 
 class Engine:
@@ -167,14 +175,14 @@ class Engine:
                 outcomes.append(Outcome(f, d, "skipped", f"run budget of ${limit:.2f} spent"))
                 continue
             attempted += 1
-            self.log(f"→ {f.short()}  [{d.action.value} via rule '{d.rule}']")
+            self.log(finding_line(f))
             try:
                 o = self.fix_one(f, d)
             except Exception as exc:  # noqa: BLE001 - one bad finding must not stop the run
                 o = Outcome(f, d, "error", f"{type(exc).__name__}: {exc}")
             self.spent_usd += o.cost_usd or 0.0
             self.spent_tokens += o.tokens
-            self.log(f"  {o.status}: {o.detail}" + (f"  {o.pr_url}" if o.pr_url else ""))
+            self.log(result_line(o.status, o.detail, [(c.name, c.status) for c in o.checks], o.pr_url))
             outcomes.append(o)
         self.write_summary(outcomes, author_ref)
         return outcomes
@@ -193,7 +201,7 @@ class Engine:
             vcfg = self.policy.verify
             setup = vcfg.setup.command if vcfg.setup else detect_setup_command(proj)
             test_cmd = vcfg.tests.command if vcfg.tests else detect_test_command(proj)
-            spec = vcfg.scanner
+            spec = scanner_spec(vcfg.scanner, f)
             scanner = Scanner(spec.model_dump() if isinstance(spec, Command) else spec, f)
 
             # 1. Baseline on the original code.
@@ -208,7 +216,6 @@ class Engine:
                     checks=[check_rescan(base_scan, base_scan, scanner)],
                 )
             if setup and test_cmd:
-                self.log(f"  setup: {setup}")
                 res = self.sandbox.run(setup, proj, timeout=vcfg.setup.timeout if vcfg.setup else 1200, network=True)
                 if not res.ok:
                     self.log(f"  setup failed (exit {res.exit_code}); tests may fail")

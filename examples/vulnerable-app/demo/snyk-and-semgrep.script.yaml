@@ -1,0 +1,91 @@
+# Recorded tool calls for the `scripted` provider, one entry per finding, so a single run can fix a
+# Snyk Code finding and a Semgrep finding without an API key. Snyk and Semgrep still rescan for real:
+#
+#   openfix fix findings/snyk-code.sarif findings/semgrep.sarif \
+#     --only javascript/CommandInjection,path-traversal-path-join-var \
+#     --model scripted:demo/snyk-and-semgrep.script.yaml --sandbox local
+javascript/CommandInjection:
+  - tool: read_file
+    args: { path: src/exec.js }
+  - tool: write_file
+    args:
+      path: src/exec.js
+      content: |
+        var { execFile } = require("child_process");
+
+        /**
+         * Pings a host. execFile passes the host as a single argument, with no shell to interpret it.
+         */
+        function pingHost(host) {
+          return new Promise(function (resolve, reject) {
+            if (!/^[A-Za-z0-9.:-]+$/.test(String(host))) {
+              return reject(new Error("Invalid host"));
+            }
+            execFile("ping", ["-c", "1", String(host)], function (err, stdout, stderr) {
+              if (err) return reject(err);
+              resolve(stdout || stderr);
+            });
+          });
+        }
+
+        module.exports = { pingHost };
+  - tool: write_file
+    args:
+      path: test/exec-injection.test.js
+      content: |
+        var test = require("node:test");
+        var assert = require("node:assert/strict");
+        var { pingHost } = require("../src/exec");
+
+        test("pingHost rejects hosts with shell metacharacters", async function () {
+          await assert.rejects(pingHost("127.0.0.1; echo injected"), /Invalid host/);
+        });
+  - tool: run_tests
+  - tool: submit
+    args:
+      summary: Run ping with execFile and an argument list, and reject hosts that are not plain names or addresses.
+      root_cause: The host from the query string was concatenated into a shell command passed to exec().
+      regression_test: test/exec-injection.test.js
+      confidence: high
+
+path-traversal-path-join-var:
+  - tool: read_file
+    args: { path: src/files.js }
+  - tool: edit_file
+    args:
+      path: src/files.js
+      old_text: |
+        function readUserFile(userPath) {
+          var base = path.join(__dirname, "..", "data");
+          var target = path.join(base, userPath);
+          return fs.readFileSync(target, "utf8");
+        }
+      new_text: |
+        function readUserFile(userPath) {
+          var base = path.resolve(__dirname, "..", "data");
+          var target = path.resolve(base, String(userPath));
+          if (target !== base && !target.startsWith(base + path.sep)) {
+            throw new Error("Path escapes the data directory");
+          }
+          return fs.readFileSync(target, "utf8");
+        }
+  - tool: write_file
+    args:
+      path: test/files-traversal.test.js
+      content: |
+        var test = require("node:test");
+        var assert = require("node:assert/strict");
+        var files = require("../src/files");
+
+        test("readUserFile rejects paths outside the data directory", function () {
+          assert.throws(function () {
+            files.readUserFile("../package.json");
+          }, /escapes the data directory/);
+        });
+  - tool: run_tests
+  - tool: submit
+    args:
+      summary: Resolve the requested path against the data directory and reject any result outside it.
+      root_cause: path.join() normalises "../" segments, so user input could climb out of the data directory.
+      regression_test: test/files-traversal.test.js
+      confidence: high
