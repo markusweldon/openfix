@@ -22,15 +22,6 @@ Every fix comes with a **receipt**: a signed, re-checkable record of what change
 <br>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/demo-dark.gif">
-  <img alt="Terminal demo. Snyk Code found a command injection in /ping and Semgrep found a path traversal in readUserFile. One openfix fix command takes both reports. For each finding it shows rescan, tests and regression test passed, then verified. It ends on: 2 scanners in, 2 verified fixes out." src="docs/assets/demo-light.gif" width="100%">
-</picture>
-
-<sub>Recorded from <code>examples/vulnerable-app</code> with <a href="docs/demo/record.py"><code>docs/demo/record.py</code></a>. The model's tool calls are replayed so anyone can rerun it without an API key; Snyk Code, Semgrep and the tests run for real. Waiting is sped up.</sub>
-
-<br>
-
-<picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/architecture-dark.svg">
   <img alt="OpenFix pipeline. Ingest: any scanner report is normalized. Policy: openfix.yaml decides autofix, propose or skip. Agent: any model edits a disposable worktree using policy-checked tools only. Verify: rescan, tests, regression test and optional review, independent of the agent. Ship: receipt.json, patch.diff, SARIF fixes and a draft PR." src="docs/assets/architecture-light.svg" width="100%">
 </picture>
@@ -41,6 +32,15 @@ Every fix comes with a **receipt**: a signed, re-checkable record of what change
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/implementation-dark.svg">
   <img alt="OpenFix implementation. Scanners in: Snyk, Semgrep, GitHub CodeQL and Dependabot, Trivy, or any SARIF, plus openfix.yaml. OpenFix core: ingest.py, policy.py and engine.py hand each finding to a disposable git worktree (gitutil.py), where agent/loop.py talks to Claude, Gemini, OpenAI, Grok or Ollama through providers/ using tool calls only. verify.py then runs rescan, tests, regression test and review, using sandbox.py (Docker, no network) and scanners.py. Results out: receipt.json, patch.diff, openfix.sarif, summary.md and a GitHub draft pull request. Runs as a CLI or GitHub Action on Python 3.10+." src="docs/assets/implementation-light.svg" width="100%">
 </picture>
+
+<br>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/demo-dark.gif">
+  <img alt="Terminal demo. Snyk Code found a command injection in /ping and Semgrep found a path traversal in readUserFile. One openfix fix command takes both reports. For each finding it shows rescan, tests and regression test passed, then verified. It ends on: 2 scanners in, 2 verified fixes out." src="docs/assets/demo-light.gif" width="100%">
+</picture>
+
+Demo example from <code>examples/vulnerable-app</code> with <a href="docs/demo/record.py"><code>docs/demo/record.py</code></a>. The model's tool calls are replayed so anyone can rerun it without an API key; Snyk Code, Semgrep and the tests run for real. Waiting is sped up.
 
 <br>
 
