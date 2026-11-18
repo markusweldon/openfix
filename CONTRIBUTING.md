@@ -16,3 +16,10 @@ Good first contributions:
 Keep the separation that makes OpenFix trustworthy: models propose, code verifies. A change that lets model output
 affect a verification result, or widens what the agent's tools can touch, needs a test that shows the boundary still
 holds.
+
+## Releasing
+
+1. Bump `__version__` in `src/openfix/__init__.py`, and the version in the README's GitHub Action example.
+2. Merge to `main` once CI passes.
+3. Publish a GitHub release tagged `v<version>`. The `Release` workflow checks that the tag matches `__version__`,
+   builds the package and uploads it to PyPI through trusted publishing, so no API token is stored.
