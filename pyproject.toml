@@ -1,12 +1,11 @@
 [build-system]
-requires = ["hatchling>=1.25"]
+requires = ["hatchling>=1.25", "hatch-fancy-pypi-readme>=24.1"]
 build-backend = "hatchling.build"
 
 [project]
 name = "openfix"
-version = "0.3.0"
 description = "Model-agnostic security remediation agent. Every fix ships with proof."
-readme = "README.md"
+dynamic = ["version", "readme"]
 license = "MIT"
 requires-python = ">=3.10"
 authors = [{ name = "Markus Weldon" }]
@@ -16,7 +15,13 @@ classifiers = [
   "Environment :: Console",
   "Intended Audience :: Developers",
   "Intended Audience :: Information Technology",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Security",
   "Topic :: Software Development :: Quality Assurance",
 ]
@@ -38,10 +43,37 @@ openfix = "openfix.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/markusweldon/openfix"
+Documentation = "https://github.com/markusweldon/openfix#documentation"
 Issues = "https://github.com/markusweldon/openfix/issues"
+Changelog = "https://github.com/markusweldon/openfix/releases"
+
+[tool.hatch.version]
+path = "src/openfix/__init__.py"
+
+# PyPI can't resolve the README's relative links, so point images at raw files and links at GitHub.
+[tool.hatch.metadata.hooks.fancy-pypi-readme]
+content-type = "text/markdown"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "README.md"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
+pattern = 'src="(?!https?://)([^"]+)"'
+replacement = 'src="https://raw.githubusercontent.com/markusweldon/openfix/main/\1"'
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
+pattern = 'href="(?!https?://|#)([^"]+)"'
+replacement = 'href="https://github.com/markusweldon/openfix/blob/main/\1"'
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
+pattern = '\]\((?!https?://|#)([^)]+)\)'
+replacement = '](https://github.com/markusweldon/openfix/blob/main/\1)'
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/openfix"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/src/openfix", "/tests", "/examples", "/README.md", "/LICENSE"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -84,7 +84,7 @@ CLI and GitHub Action. SARIF in and SARIF out (with `fixes[]`). in-toto receipts
 ## Quick start
 
 ```bash
-pip install "openfix[all] @ git+https://github.com/markusweldon/openfix"
+pip install "openfix[all]"            # or: uv tool install "openfix[all]"
 export ANTHROPIC_API_KEY=...          # or OPENAI_API_KEY, GEMINI_API_KEY, XAI_API_KEY, ... (openfix providers)
 
 semgrep scan --sarif -o semgrep.sarif # any scanner that writes SARIF or a supported JSON format
@@ -216,7 +216,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: pip install semgrep && semgrep scan --config p/default --sarif -o semgrep.sarif || true
-      - uses: markusweldon/openfix@v0.3.0
+      - uses: markusweldon/openfix@v0.4.0
         with:
           reports: semgrep.sarif
           model: anthropic:claude-opus-5-5

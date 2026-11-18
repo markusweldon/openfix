@@ -1,6 +1,13 @@
 # Roadmap
 
-## 0.3 (this release, alpha)
+## 0.4 (this release, alpha)
+
+- Published on PyPI: `pip install openfix`
+- One run can rescan with a different scanner per tool (`verify.scanner` as a mapping), e.g. Snyk Code and Semgrep
+- Coloured terminal output: one line per finding, then its checks and outcome
+- `--open-prs` reruns reuse the PR branch instead of failing
+
+## 0.3 (alpha)
 
 - Ingest SARIF, Semgrep, Snyk, Trivy, OSV-Scanner, Gitleaks, GitHub code scanning and Dependabot
 - Policy as code: actions, guards, budgets, per-rule models, local-only paths
