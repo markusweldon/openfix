@@ -202,6 +202,10 @@ Run `openfix providers` to see which credentials are set. Details: [docs/provide
 
 ## GitHub Action
 
+### Run it on a schedule
+
+Put OpenFix on a schedule and it works as a remediation factory: your scanners' findings go in, and verified draft PRs come out. Nothing ships without proof, and a person still merges every fix. The workflow below runs every Monday at 06:00 UTC, and you can also start it by hand from the Actions tab. `max` caps how many findings one run attempts, and `max_usd_per_run` in [`openfix.yaml`](docs/policy.md) caps what a run can spend on the model.
+
 ```yaml
 name: OpenFix
 on:
