@@ -5,8 +5,8 @@ Run from the repository root:
 
     uv run --with fonttools --with brotli python docs/brand/build.py
 
-Writes logo-dark.svg, mark.svg, and the architecture, implementation, proof, receipt and schedule
-diagrams (*-dark.svg). The README is dark only: every image sits on its own dark card, so it reads on
+Writes logo-dark.svg, mark.svg, and the architecture, implementation, proof, receipt, schedule and
+security diagrams (*-dark.svg). The README is dark only: every image sits on its own dark card, so it reads on
 light and dark GitHub pages.
 Pass --png to also render social-preview.png (needs Playwright; set CHROMIUM_PATH to use a specific Chromium).
 
@@ -1034,6 +1034,128 @@ def schedule(T: dict) -> str:
     return c.svg()
 
 
+# --------------------------------------------------------------------------------------------
+# Security model: what is untrusted, the walls around the model, and the only way out
+# --------------------------------------------------------------------------------------------
+
+
+def security(T: dict) -> str:
+    c = Canvas(
+        1280,
+        620,
+        "OpenFix security model: untrusted inputs, a model with no shell, network or git, sandboxed tests, and verification as the only way out.",
+    )
+    background(c, T, glow_at=(0.5, 0.0))
+    header(
+        c,
+        T,
+        "SECURITY MODEL",
+        ("A small ", "blast radius."),
+        [
+            ("no shell", T["text"]),
+            (" · ", T["faint"]),
+            ("no network", T["text"]),
+            (" · ", T["faint"]),
+            ("no git", T["text"]),
+        ],
+    )
+    Y, H = 116, 400
+
+    # untrusted inputs
+    LX, LW = 32, 268
+    panel(c, T, LX, Y, LW, H, "UNTRUSTED IN", "red")
+    inputs = [
+        ("Scanner reports", ["handled as data, never as", "instructions; secrets redacted"]),
+        ("Repository code", ["may hold prompt injection", "or malicious tests"]),
+        ("Model output", ["can only call the listed tools,", "and is never taken on its word"]),
+    ]
+    for k, (title, lines) in enumerate(inputs):
+        y = Y + 70 + k * 106
+        c.rect(LX + 20, y, 3, 82, 1.5, T["red"])
+        c.text(LX + 36, y + 20, title, 16.5, T["text"], weight=700)
+        for j, ln in enumerate(lines):
+            c.text(LX + 36, y + 46 + j * 21, ln, 13.5, T["muted"])
+
+    # the worktree: the agent and the sandbox
+    MX, MW = 330, 620
+    panel(c, T, MX, Y, MW, H, "DISPOSABLE WORKTREE", "violet", "your checkout is never touched")
+    AX, AW = MX + 20, 284
+    c.rect(AX, Y + 64, AW, H - 84, 12, T["raised"], T["line"])
+    c.text(AX + 18, Y + 96, "The model", 18, T["text"], weight=700)
+    c.text(AX + AW - 18, Y + 96, "any provider", 12.5, T["violet"], font="mono", anchor="end")
+    c.line(AX + 18, Y + 112, AX + AW - 18, Y + 112, T["line"], 1)
+    can = ["read and search files", "edit files in the worktree", "run tests and rescan", "submit or give up"]
+    cant = [
+        "no shell, network or git",
+        "no paths outside the checkout",
+        "no protected paths",
+        "no writes past size limits",
+    ]
+    for k, t in enumerate(can):
+        y = Y + 138 + k * 28
+        check(c, AX + 26, y - 5, 7.5, T)
+        c.text(AX + 42, y, t, 14, T["text"])
+    for k, t in enumerate(cant):
+        y = Y + 268 + k * 28
+        cross(c, AX + 26, y - 5, 7.5, T)
+        c.text(AX + 42, y, t, 14, T["muted"])
+
+    SX, SW = AX + AW + 16, MW - 40 - AW - 16
+    c.rect(SX, Y + 64, SW, H - 84, 12, T["raised"], T["line"])
+    c.icon("docker", SX + 18, Y + 81, 22, T["blue"])
+    c.text(SX + 48, Y + 96, "Test sandbox", 18, T["text"], weight=700)
+    c.line(SX + 18, Y + 112, SX + SW - 18, Y + 112, T["line"], 1)
+    box = [
+        ("--network none", "a fresh container per command"),
+        ("--cap-drop ALL", "plus no-new-privileges"),
+        ("limits", "memory, CPU and processes"),
+        ("--user", "your user id, not root"),
+    ]
+    for k, (a, b) in enumerate(box):
+        y = Y + 140 + k * 56
+        c.text(SX + 18, y, a, 14.5, T["blue"], font="mono", weight=700)
+        c.text(SX + 18, y + 21, b, 13.5, T["muted"])
+
+    # the only way out
+    RX, RW = 980, 268
+    c.defs.append(
+        '<filter id="halo4" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter>'
+    )
+    c.rect(RX + 6, Y + 10, RW - 12, H - 10, 16, T["lime"], extra=' opacity="0.16" filter="url(#halo4)"')
+    c.rect(RX, Y, RW, H, 16, T["raised"], T["lime"], 1.5)
+    pill(c, RX + 18, Y + 20, "THE ONLY WAY OUT", INK, T["lime"])
+    steps = [
+        ("Code verifies", ["rescan, tests, regression", "test, optional review"]),
+        ("Draft PR", ["only for verified autofix", "findings"]),
+        ("A person merges", ["your CI and branch", "protection still apply"]),
+    ]
+    for k, (title, lines) in enumerate(steps):
+        y = Y + 92 + k * 104
+        check(c, RX + 32, y - 5, 10, T)
+        c.text(RX + 52, y, title, 16.5, T["text"], weight=700)
+        for j, ln in enumerate(lines):
+            c.text(RX + 52, y + 23 + j * 20, ln, 13.5, T["muted"])
+        if k < 2:
+            c.arrow(RX + 32, y + 14, RX + 32, y + 78, T["faint"], sw=1.5, head=4.5)
+
+    c.arrow(LX + LW + 5, Y + H / 2, MX - 5, Y + H / 2, T["faint"], sw=1.75, head=5)
+    c.arrow(MX + MW + 5, Y + H / 2, RX - 5, Y + H / 2, T["lime"], sw=1.75, head=5)
+
+    footer_note(
+        c,
+        T,
+        Y + H + 22,
+        [
+            ("Secrets stay outside. ", T["text"], 700),
+            (
+                "API keys never enter the sandbox, the prompts or the receipts; commands run with a scrubbed environment.",
+                T["muted"],
+            ),
+        ],
+    )
+    return c.svg()
+
+
 def main() -> None:
     ASSETS.mkdir(parents=True, exist_ok=True)
     out = {"mark.svg": mark_svg()}
@@ -1044,6 +1166,7 @@ def main() -> None:
         out[f"proof-{name}.svg"] = proof(T)
         out[f"receipt-{name}.svg"] = receipt(T)
         out[f"schedule-{name}.svg"] = schedule(T)
+        out[f"security-{name}.svg"] = security(T)
     for fn, svg in out.items():
         (ASSETS / fn).write_text(svg)
         print(f"wrote docs/assets/{fn} ({len(svg) / 1024:.0f} KB)")

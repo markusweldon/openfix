@@ -3,6 +3,8 @@
 OpenFix gives a language model write access to source code, in a security context. That makes the harness around
 the model part of the security boundary. This page states what OpenFix defends against and what it doesn't.
 
+<img alt="OpenFix security model. Untrusted inputs: scanner reports, handled as data with secrets redacted; repository code, which may hold prompt injection or malicious tests; and model output, which can only call the listed tools. Inside a disposable git worktree, the model can read and search files, edit files, run tests and rescan, and submit or give up, but has no shell, network or git, no paths outside the checkout, no protected paths and no writes past size limits. Tests run in a Docker sandbox: no network, a fresh container per command, all capabilities dropped, no-new-privileges, memory, CPU and process limits, and your user id rather than root. The only way out: code verifies, then a draft PR for verified autofix findings, then a person merges. Secrets stay outside: API keys never enter the sandbox, the prompts or the receipts." src="assets/security-dark.svg" width="100%">
+
 ## Assets and trust
 
 | Input | Trusted? | Handling |
