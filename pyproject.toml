@@ -3,7 +3,7 @@ requires = ["hatchling>=1.25", "hatch-fancy-pypi-readme>=24.1"]
 build-backend = "hatchling.build"
 
 [project]
-name = "openfix"
+name = "openfix-cli"
 description = "Model-agnostic security remediation agent. Every fix ships with proof."
 dynamic = ["version", "readme"]
 license = "MIT"

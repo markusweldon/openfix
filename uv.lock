@@ -1071,7 +1071,7 @@ wheels = [
 ]
 
 [[package]]
-name = "openfix"
+name = "openfix-cli"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },

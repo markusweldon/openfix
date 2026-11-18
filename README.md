@@ -84,7 +84,7 @@ CLI and GitHub Action. SARIF in and SARIF out (with `fixes[]`). in-toto receipts
 ## Quick start
 
 ```bash
-pip install "openfix[all]"            # or: uv tool install "openfix[all]"
+pip install "openfix-cli[all]"        # or: uv tool install "openfix-cli[all]"
 export ANTHROPIC_API_KEY=...          # or OPENAI_API_KEY, GEMINI_API_KEY, XAI_API_KEY, ... (openfix providers)
 
 semgrep scan --sarif -o semgrep.sarif # any scanner that writes SARIF or a supported JSON format

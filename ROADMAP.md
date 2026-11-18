@@ -2,7 +2,7 @@
 
 ## 0.4 (this release, alpha)
 
-- Published on PyPI: `pip install openfix`
+- Published on PyPI as `openfix-cli`: `pip install openfix-cli` (the command is still `openfix`)
 - One run can rescan with a different scanner per tool (`verify.scanner` as a mapping), e.g. Snyk Code and Semgrep
 - Coloured terminal output: one line per finding, then its checks and outcome
 - `--open-prs` reruns reuse the PR branch instead of failing
