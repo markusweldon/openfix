@@ -1072,7 +1072,6 @@ wheels = [
 
 [[package]]
 name = "openfix"
-version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },
@@ -1120,7 +1119,7 @@ requires-dist = [
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.6" },
     { name = "types-pyyaml", marker = "extra == 'dev'" },
 ]
-provides-extras = ["anthropic", "openai", "gemini", "all", "dev"]
+provides-extras = ["all", "anthropic", "dev", "gemini", "openai"]
 
 [[package]]
 name = "opentelemetry-api"
