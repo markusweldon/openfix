@@ -1,5 +1,5 @@
 # ruff: noqa: E501
-"""Record the README demo (docs/assets/demo-{dark,light}.gif).
+"""Record the README demo (docs/assets/demo-dark.gif).
 
 Run from the repository root:  python docs/demo/record.py
 Needs vhs, ffmpeg, node, semgrep, snyk, gh (signed in) and Google Chrome, and OpenFix installed in .venv.
@@ -44,32 +44,6 @@ THEMES = {
             "brightMagenta": "#d6c4ff",
             "brightCyan": "#56d4dd",
             "brightWhite": "#f2f5fa",
-        },
-    ),
-    "light": dict(
-        page="#ffffff",
-        theme={
-            "name": "openfix-light",
-            "background": "#f7f9fc",
-            "foreground": "#0a0e16",
-            "selection": "#eef9d2",
-            "cursor": "#6fa300",
-            "black": "#24292f",
-            "red": "#cf222e",
-            "green": "#456b00",
-            "yellow": "#b65a00",
-            "blue": "#1b5fd9",
-            "magenta": "#6a3bdb",
-            "cyan": "#1b7c83",
-            "white": "#6e7781",
-            "brightBlack": "#525c70",
-            "brightRed": "#a40e26",
-            "brightGreen": "#355300",
-            "brightYellow": "#8f4700",
-            "brightBlue": "#144bb0",
-            "brightMagenta": "#5428c0",
-            "brightCyan": "#3192aa",
-            "brightWhite": "#0a0e16",
         },
     ),
 }
@@ -176,12 +150,8 @@ def card_tape(cfg: dict, output: Path) -> str:
 
 def screenshot(name: str, url: str) -> Path:
     out = work / f"pr-{name}.png"
-    # GitHub follows prefers-color-scheme for signed-out visitors; force it either way (0 = dark, 1 = light).
-    scheme = (
-        ["--force-dark-mode", "--blink-settings=preferredColorScheme=0"]
-        if name == "dark"
-        else ["--blink-settings=preferredColorScheme=1"]
-    )
+    # GitHub follows prefers-color-scheme for signed-out visitors; force dark to match the terminal.
+    scheme = ["--force-dark-mode", "--blink-settings=preferredColorScheme=0"]
     subprocess.run(
         [CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--window-size=1400,1300",
          "--force-device-scale-factor=2", *scheme, f"--user-data-dir={work / f'chrome-{name}'}",

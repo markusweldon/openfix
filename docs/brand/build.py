@@ -5,7 +5,8 @@ Run from the repository root:
 
     uv run --with fonttools --with brotli python docs/brand/build.py
 
-Writes logo-{light,dark}.svg, mark.svg, architecture-{light,dark}.svg and implementation-{light,dark}.svg.
+Writes logo-dark.svg, mark.svg, architecture-dark.svg and implementation-dark.svg. The README is dark only:
+every image sits on its own dark card, so it reads on light and dark GitHub pages.
 Pass --png to also render social-preview.png (needs Playwright; set CHROMIUM_PATH to use a specific Chromium).
 
 Every SVG embeds a subset of Space Grotesk and JetBrains Mono (SIL OFL 1.1, see docs/brand/fonts/),
@@ -64,33 +65,6 @@ THEMES = {
         amber="#FFBE5C",
         amber_tint="#33230B",
         neutral_tint="#1A2130",
-    ),
-    "light": dict(
-        name="light",
-        bg="#FFFFFF",
-        frame="#E3E8F0",
-        dot="#E9EDF3",
-        panel="#F7F9FC",
-        raised="#FFFFFF",
-        line="#E1E6EE",
-        text="#0A0E16",
-        muted="#525C70",
-        faint="#848DA0",
-        glow="#B7EB1C",
-        glow_opacity=0.16,
-        tile=INK,
-        tile_ink=LIME,
-        icon="#1E2533",
-        blue="#1B5FD9",
-        blue_tint="#E9F1FF",
-        violet="#6A3BDB",
-        violet_tint="#F2ECFF",
-        lime="#6FA300",
-        lime_text="#456B00",
-        lime_tint="#EEF9D2",
-        amber="#B65A00",
-        amber_tint="#FFF1DE",
-        neutral_tint="#EEF1F6",
     ),
 }
 
@@ -261,14 +235,8 @@ def background(c: Canvas, T: dict, glow_at=(1.0, 0.0)) -> None:
 
 
 def headline(c: Canvas, T: dict, x, y, size, plain: str, hl: str = "", ls=-0.02, weight=700) -> None:
-    """Plain text followed by the brand-highlighted part: lime text on dark, a lime marker stroke on light."""
-    if hl and T["name"] == "light":
-        x0 = x + measure(plain, size, "sans", weight, ls) - size * 0.08
-        w = measure(hl, size, "sans", weight, ls) + size * 0.16
-        c.rect(x0, y - size * 0.62, w, size * 0.78, size * 0.12, LIME)
-        c.spans(x, y, [(plain, T["text"]), (hl, INK)], size, weight=weight, ls=ls)
-    else:
-        c.spans(x, y, [(plain, T["text"]), (hl, T["lime"])], size, weight=weight, ls=ls)
+    """Plain text followed by the brand-highlighted part in lime."""
+    c.spans(x, y, [(plain, T["text"]), (hl, T["lime"])], size, weight=weight, ls=ls)
 
 
 def header(c: Canvas, T: dict, eyebrow: str, title: tuple[str, str], chip_parts) -> None:
@@ -315,7 +283,7 @@ def check(c, cx, cy, r, T):
     )
     c.path(
         f"M{f(cx - r * 0.42)} {f(cy + r * 0.02)} L{f(cx - r * 0.1)} {f(cy + r * 0.36)} L{f(cx + r * 0.45)} {f(cy - r * 0.34)}",
-        stroke=T["lime_text"] if T["name"] == "light" else T["lime"],
+        stroke=T["lime"],
         sw=1.9,
     )
 
@@ -326,10 +294,12 @@ def check(c, cx, cy, r, T):
 
 
 def logo(T: dict) -> str:
-    c = Canvas(560, 132, "OpenFix")
-    mark(c, 6, 14, 104, T["tile"], T["tile_ink"])
-    headline(c, T, 134, 82, 68, "Open", "Fix", ls=-0.035)
-    c.text(137, 116, "verified security fixes from any model", 17, T["muted"], font="mono", weight=500, ls=-0.01)
+    # A solid card, like the diagrams, so the logo reads on light and dark GitHub pages alike.
+    c = Canvas(620, 180, "OpenFix")
+    background(c, T)
+    mark(c, 36, 38, 104, T["tile"], T["tile_ink"])
+    headline(c, T, 164, 106, 68, "Open", "Fix", ls=-0.035)
+    c.text(167, 140, "verified security fixes from any model", 17, T["muted"], font="mono", weight=500, ls=-0.01)
     return c.svg()
 
 

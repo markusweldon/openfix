@@ -16,8 +16,7 @@ An open ring with a check that breaks out through the gap: **open** source, a **
 
 | Use | File |
 | --- | --- |
-| Logo for light backgrounds | `docs/assets/logo-light.svg` (Ink tile, lime glyph) |
-| Logo for dark backgrounds | `docs/assets/logo-dark.svg` (lime tile, Ink glyph) |
+| README logo | `docs/assets/logo-dark.svg` (lime tile, Ink glyph, on a dark card) |
 | Icon, avatar, favicon | `docs/assets/mark.svg` |
 | GitHub social preview (Settings → General → Social preview) | `docs/assets/social-preview.png` |
 
@@ -28,13 +27,14 @@ Keep at least a quarter of the tile's width clear around the mark. Don't recolou
 | Token | Hex | Use |
 | --- | --- | --- |
 | Signal Lime | `#C6F432` | The brand colour. Means *verified*. Mark tile, highlights, the Verify stage. |
-| Ink | `#0A0E16` | Text on light, background on dark, the mark's glyph on lime. |
-| Lime text (light) | `#456B00` | Lime-family text on white, where `#C6F432` is unreadable. |
-| Blue | `#7DB2FF` / `#1B5FD9` | Deterministic steps (ingest, policy, scanners). Dark / light. |
-| Violet | `#BFA2FF` / `#6A3BDB` | Anything a model does. Dark / light. |
-| Amber | `#FFBE5C` / `#B65A00` | Outputs and human decisions. Dark / light. |
+| Ink | `#0A0E16` | Backgrounds, and the mark's glyph on lime. |
+| Blue | `#7DB2FF` | Deterministic steps (ingest, policy, scanners). |
+| Violet | `#BFA2FF` | Anything a model does. |
+| Amber | `#FFBE5C` | Outputs and human decisions. |
 
-Lime is for proof. On dark backgrounds use it as text; on light backgrounds use it as a highlighter behind Ink text (as in "Code verifies." in the pipeline diagram), never as thin text.
+Lime is for proof: use it for text and accents on Ink.
+
+The README is dark only. Every image, including the logo, sits on its own dark card, so it reads the same on light and dark GitHub pages. The demo GIF's terminal uses the same palette.
 
 ## Type
 
