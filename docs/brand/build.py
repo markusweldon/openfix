@@ -5,8 +5,9 @@ Run from the repository root:
 
     uv run --with fonttools --with brotli python docs/brand/build.py
 
-Writes logo-dark.svg, mark.svg, architecture-dark.svg and implementation-dark.svg. The README is dark only:
-every image sits on its own dark card, so it reads on light and dark GitHub pages.
+Writes logo-dark.svg, mark.svg, and the architecture, implementation, proof, receipt and schedule
+diagrams (*-dark.svg). The README is dark only: every image sits on its own dark card, so it reads on
+light and dark GitHub pages.
 Pass --png to also render social-preview.png (needs Playwright; set CHROMIUM_PATH to use a specific Chromium).
 
 Every SVG embeds a subset of Space Grotesk and JetBrains Mono (SIL OFL 1.1, see docs/brand/fonts/),
@@ -65,6 +66,8 @@ THEMES = {
         amber="#FFBE5C",
         amber_tint="#33230B",
         neutral_tint="#1A2130",
+        red="#FF7B72",
+        red_tint="#3A1A1C",
     ),
 }
 
@@ -732,6 +735,305 @@ def social(T: dict) -> str:
     return c.svg()
 
 
+# --------------------------------------------------------------------------------------------
+# Shared bits for the smaller diagrams
+# --------------------------------------------------------------------------------------------
+
+
+def cross(c, cx, cy, r, T):
+    c.add(
+        f'<circle cx="{f(cx)}" cy="{f(cy)}" r="{f(r)}" fill="{T["red_tint"]}" stroke="{T["red"]}" stroke-width="1.25"/>'
+    )
+    d = r * 0.36
+    c.path(
+        f"M{f(cx - d)} {f(cy - d)} L{f(cx + d)} {f(cy + d)} M{f(cx + d)} {f(cy - d)} L{f(cx - d)} {f(cy + d)}",
+        stroke=T["red"],
+        sw=1.9,
+    )
+
+
+def dot(c, cx, cy, r, T, tone="faint"):
+    c.add(
+        f'<circle cx="{f(cx)}" cy="{f(cy)}" r="{f(r)}" fill="{T["neutral_tint"]}" stroke="{T[tone]}" stroke-width="1.25"/>'
+    )
+    c.add(f'<circle cx="{f(cx)}" cy="{f(cy)}" r="{f(r * 0.28)}" fill="{T[tone]}"/>')
+
+
+def footer_note(c, T, y, parts):
+    """A full-width rounded strip at the bottom of a diagram."""
+    c.rect(32, y, c.w - 64, 48, 24, T["panel"], T["line"])
+    c.add(f'<circle cx="58" cy="{f(y + 24)}" r="4.5" fill="{T["lime"]}"/>')
+    c.spans(74, y + 29.5, parts, 15)
+
+
+# --------------------------------------------------------------------------------------------
+# How a fix is proved: each check on the original code, then on the patched code
+# --------------------------------------------------------------------------------------------
+
+
+def proof(T: dict) -> str:
+    c = Canvas(1280, 560, "How OpenFix proves a fix: every check runs on the original code and on the patched code.")
+    background(c, T, glow_at=(0.62, 0.0))
+    header(
+        c,
+        T,
+        "VERIFICATION",
+        ("Proof, ", "not prose."),
+        [("verify.py", T["text"]), (" · independent of the agent", T["muted"])],
+    )
+
+    LX, OX, PX, RX = 32, 372, 668, 964  # label, original, patched, proves
+    TOP = 120
+
+    # column heads
+    for x, label, sub, acc in [
+        (OX, "ORIGINAL CODE", "base commit", "blue"),
+        (PX, "PATCHED CODE", "with the fix", "violet"),
+    ]:
+        pw = pill(c, x + 20, TOP, label, T[acc], T[acc + "_tint"])
+        c.text(x + 20 + pw + 10, TOP + 17, sub, 12.5, T["faint"], font="mono")
+    c.text(RX + 20, TOP + 17, "WHAT IT PROVES", 11.5, T["faint"], font="mono", weight=700, ls=0.12)
+
+    rows = [
+        (
+            "Rescan",
+            "your scanner",
+            ("cross", "finding reported"),
+            ("check", "gone, nothing new"),
+            "The fix removed the real finding.",
+        ),
+        (
+            "Tests",
+            "your test suite",
+            ("dot", "baseline recorded"),
+            ("check", "no worse than before"),
+            "Nothing else broke.",
+        ),
+        (
+            "Regression test",
+            "written by the model",
+            ("cross", "must fail"),
+            ("check", "must pass"),
+            "The test really exercises the bug.",
+        ),
+        (
+            "Review",
+            "optional, second model",
+            ("none", ""),
+            ("check", "approves the diff"),
+            "A second model agrees it's fixed.",
+        ),
+    ]
+    Y0, RH = 156, 66
+    for i, (name, sub, before, after, proves) in enumerate(rows):
+        y = Y0 + i * (RH + 10)
+        hero = name == "Regression test"
+        c.rect(
+            LX,
+            y,
+            c.w - 64,
+            RH,
+            14,
+            T["raised"] if hero else T["panel"],
+            T["lime"] if hero else T["line"],
+            1.25 if hero else 1,
+        )
+        c.text(LX + 24, y + 30, name, 19, T["text"], weight=700, ls=-0.01)
+        c.text(LX + 24, y + 51, sub, 13.5, T["muted"])
+        for x, (kind, label) in [(OX, before), (PX, after)]:
+            cy = y + RH / 2
+            if kind == "none":
+                c.text(x + 20, cy + 5, "not run", 14.5, T["faint"], font="mono")
+                continue
+            {"check": check, "cross": cross, "dot": dot}[kind](c, x + 31, cy, 10.5, T)
+            color = {"check": T["lime"], "cross": T["red"], "dot": T["muted"]}[kind]
+            c.text(
+                x + 52, cy + 5.5, label, 16, color if kind != "dot" else T["text"], weight=700 if kind != "dot" else 500
+            )
+        c.arrow(PX - 22, y + RH / 2, PX - 6, y + RH / 2, T["faint"], sw=1.5, head=4.5)
+        c.text(RX + 20, y + RH / 2 + 5.5, proves, 15, T["text"] if hero else T["muted"], weight=700 if hero else 500)
+        if hero:
+            pill(c, RX + 20, y - 12, "THE KEY CHECK", INK, T["lime"], size=10.5, h=22)
+
+    footer_note(
+        c,
+        T,
+        Y0 + 4 * (RH + 10) + 14,
+        [
+            ("Every required check passes: ", T["text"], 700),
+            ("verified, and a draft PR.  ", T["lime"], 700),
+            ("Any check fails: patch and evidence only.  The model is never asked if it worked.", T["muted"]),
+        ],
+    )
+    return c.svg()
+
+
+# --------------------------------------------------------------------------------------------
+# What a receipt holds, and what `openfix receipt verify` re-checks
+# --------------------------------------------------------------------------------------------
+
+
+def receipt(T: dict) -> str:
+    c = Canvas(
+        1280,
+        600,
+        "An OpenFix receipt: an in-toto statement bound to the patch, re-checkable with openfix receipt verify.",
+    )
+    background(c, T, glow_at=(0.0, 0.0))
+    header(
+        c,
+        T,
+        "RECEIPT",
+        ("Every fix ", "ships with proof."),
+        [("$ ", T["lime_text"], 700), ("openfix receipt verify ", T["text"]), ("<fix>", T["muted"])],
+    )
+
+    # the receipt document
+    DX, DY, DW, DH = 32, 116, 740, 452
+    c.rect(DX, DY, DW, DH, 16, T["panel"], T["line"])
+    c.path(f"M{DX + 18} {DY + 0.75} h{DW - 36}", stroke=T["amber"], sw=3)
+    c.text(DX + 24, DY + 38, "receipt.json", 17, T["text"], font="mono", weight=700)
+    c.text(DX + DW - 24, DY + 38, "in-toto Statement v1", 12.5, T["faint"], font="mono", anchor="end")
+    c.line(DX + 24, DY + 56, DX + DW - 24, DY + 56, T["line"], 1)
+
+    fields = [
+        ("subject", "sha256(patch.diff)", "the exact change, hash-bound", "amber"),
+        ("finding", "Semgrep · path-traversal · src/files.js:11", "what was fixed", "blue"),
+        ("policy", "autofix via rule 'code findings'", "why it was allowed, and the policy's hash", "blue"),
+        ("repository", "base commit 9b3f760c", "what it applies to", "blue"),
+        ("author", "anthropic:claude-opus-5-5 · 9 turns · $0.41", "which model wrote it, and what it cost", "violet"),
+        ("checks", "rescan  tests  regression_test", "commands, exit codes, output tails", "lime"),
+    ]
+    for k, (key, val, note, acc) in enumerate(fields):
+        y = DY + 72 + k * 56
+        c.rect(DX + 24, y, 3, 42, 1.5, T[acc])
+        c.text(DX + 40, y + 17, key, 13, T["faint"], font="mono", weight=700, ls=0.04)
+        if key == "checks":
+            x = DX + 40
+            for name in ["rescan", "tests", "regression_test"]:
+                check(c, x + 8, y + 32, 7.5, T)
+                c.text(x + 21, y + 37, name, 14.5, T["text"], font="mono", weight=500)
+                x += measure(name, 14.5, "mono", 500) + 46
+        else:
+            c.text(DX + 40, y + 37, val, 14.5, T["text"], font="mono", weight=500)
+        c.text(DX + DW - 24, y + 37, note, 13, T["muted"], anchor="end")
+    c.line(DX + 24, DY + DH - 50, DX + DW - 24, DY + DH - 50, T["line"], 1)
+    c.spans(
+        DX + 24,
+        DY + DH - 20,
+        [("+ receipt.sigstore.json", T["text"], 700), ("  optional, --sign; check it with cosign", T["muted"])],
+        13.5,
+        font="mono",
+    )
+
+    # the verify panel
+    VX, VY, VW, VH = 812, 116, 436, 452
+    c.defs.append(
+        '<filter id="halo2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter>'
+    )
+    c.rect(VX + 6, VY + 10, VW - 12, VH - 10, 16, T["lime"], extra=' opacity="0.16" filter="url(#halo2)"')
+    c.rect(VX, VY, VW, VH, 16, T["raised"], T["lime"], 1.5)
+    c.text(VX + 24, VY + 40, "openfix receipt verify", 18, T["text"], font="mono", weight=700)
+    c.text(VX + 24, VY + 64, "anyone can re-check it, any time", 14, T["muted"])
+    c.line(VX + 24, VY + 82, VX + VW - 24, VY + 82, T["line"], 1)
+    steps = [
+        ("It is a valid statement", "in-toto v1, OpenFix receipt type"),
+        ("patch.diff matches", "the digest in the subject and predicate"),
+        ("The base commit exists", "in your repository"),
+        ("The patch still applies", "to that commit, cleanly"),
+    ]
+    for k, (a, b) in enumerate(steps):
+        y = VY + 132 + k * 80
+        check(c, VX + 35, y - 5, 10, T)
+        c.text(VX + 56, y, a, 16, T["text"], weight=700)
+        c.text(VX + 56, y + 21, b, 13.5, T["muted"])
+    c.arrow(DX + DW + 6, VY + VH / 2, VX - 6, VY + VH / 2, T["lime"], sw=1.75, head=5.5)
+    return c.svg()
+
+
+# --------------------------------------------------------------------------------------------
+# The scheduled GitHub Action: a remediation factory with a person at the end
+# --------------------------------------------------------------------------------------------
+
+
+def schedule(T: dict) -> str:
+    c = Canvas(
+        1280, 470, "OpenFix on a schedule: scanners run, OpenFix fixes and verifies, draft PRs open, a person merges."
+    )
+    background(c, T, glow_at=(1.0, 0.0))
+    header(
+        c,
+        T,
+        "GITHUB ACTION",
+        ("Findings in. ", "Verified PRs out."),
+        [("on: ", T["muted"]), ("schedule", T["text"]), (" · every Monday", T["muted"])],
+    )
+
+    X0, W, GAP, Y, H = 32, 220, 29, 124, 216
+    cols = [X0 + i * (W + GAP) for i in range(5)]
+    stages = [
+        ("Schedule", "blue", ["cron: 0 6 * * 1", "or run it by hand"], "workflow_dispatch"),
+        ("Scan", "blue", ["Snyk · Semgrep", "CodeQL · Trivy"], "reports in SARIF"),
+        ("Fix + verify", "lime", ["policy decides", "model patches", "code proves it"], "max · max_usd_per_run"),
+        ("Draft PRs", "amber", ["one per verified fix", "evidence table", "receipt digest"], "never auto-merged"),
+        ("You merge", "amber", ["your CI runs", "a person reviews", "and decides"], "humans stay in charge"),
+    ]
+    for i, (title, acc, lines, foot) in enumerate(stages):
+        x = cols[i]
+        hero = acc == "lime"
+        if hero:
+            c.defs.append(
+                '<filter id="halo3" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter>'
+            )
+            c.rect(x + 6, Y + 10, W - 12, H - 10, 16, T["lime"], extra=' opacity="0.2" filter="url(#halo3)"')
+        c.rect(
+            x, Y, W, H, 14, T["raised"] if hero else T["panel"], T["lime"] if hero else T["line"], 1.5 if hero else 1
+        )
+        c.path(f"M{x + 18} {Y + 0.75} h{W - 36}", stroke=T[acc], sw=3)
+        c.text(x + 20, Y + 42, f"0{i + 1}", 13, T[acc], font="mono", weight=700)
+        c.text(x + 48, Y + 43, title, 21, T["text"], weight=700, ls=-0.02)
+        c.line(x + 20, Y + 62, x + W - 20, Y + 62, T["line"], 1)
+        for k, ln in enumerate(lines):
+            mono = ln.startswith("cron")
+            c.text(
+                x + 20,
+                Y + 92 + k * 26,
+                ln,
+                14.5 if mono else 15,
+                T["text"],
+                font="mono" if mono else "sans",
+                weight=500,
+            )
+        c.line(x + 20, Y + H - 40, x + W - 20, Y + H - 40, T["line"], 1)
+        c.text(x + W / 2, Y + H - 15, foot, 12.5, T["faint"], font="mono", weight=500, anchor="middle")
+        if i < 4:
+            c.arrow(x + W + 7, Y + 37, x + W + GAP - 7, Y + 37, T["faint"], sw=1.75, head=5)
+
+    # loop back: the next run
+    ly = Y + H + 30
+    x1, x2 = cols[4] + W / 2, cols[0] + W / 2
+    c.path(
+        f"M{f(x1)} {Y + H + 2} V{ly} H{f(x2)} V{Y + H + 8}", stroke=T["faint"], sw=1.5, extra=' stroke-dasharray="3 5"'
+    )
+    c.path(f"M{f(x2 - 5)} {Y + H + 14} L{f(x2)} {Y + H + 8} L{f(x2 + 5)} {Y + H + 14}", stroke=T["faint"], sw=1.5)
+    label = "next run: reruns update the same PR branch, never a duplicate PR"
+    w = measure(label, 13.5, "sans", 500) + 32
+    mx = (x1 + x2) / 2
+    c.rect(mx - w / 2, ly - 14, w, 28, 14, T["bg"], T["line"])
+    c.text(mx, ly + 4.5, label, 13.5, T["muted"], anchor="middle")
+    footer_note(
+        c,
+        T,
+        ly + 34,
+        [
+            ("Every run uploads ", T["muted"]),
+            ("receipts, summary.md and openfix.sarif", T["text"], 700),
+            (" as a workflow artifact.", T["muted"]),
+        ],
+    )
+    return c.svg()
+
+
 def main() -> None:
     ASSETS.mkdir(parents=True, exist_ok=True)
     out = {"mark.svg": mark_svg()}
@@ -739,6 +1041,9 @@ def main() -> None:
         out[f"logo-{name}.svg"] = logo(T)
         out[f"architecture-{name}.svg"] = architecture(T)
         out[f"implementation-{name}.svg"] = implementation(T)
+        out[f"proof-{name}.svg"] = proof(T)
+        out[f"receipt-{name}.svg"] = receipt(T)
+        out[f"schedule-{name}.svg"] = schedule(T)
     for fn, svg in out.items():
         (ASSETS / fn).write_text(svg)
         print(f"wrote docs/assets/{fn} ({len(svg) / 1024:.0f} KB)")
