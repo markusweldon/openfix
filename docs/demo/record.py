@@ -7,7 +7,7 @@ Needs vhs, ffmpeg, node, semgrep, snyk, gh (signed in) and Google Chrome, and Op
 It clones github.com/markusweldon/openfix-demo (a copy of examples/vulnerable-app), fixes one Snyk Code and
 one Semgrep finding with --open-prs, then cuts to a screenshot of the Snyk fix's draft PR. Reruns reuse the
 same PR branches. The model's tool calls are replayed from demo/snyk-and-semgrep.script.yaml; Snyk Code,
-Semgrep, the tests and GitHub are real. Waits are sped up SPEED times. Colours follow the diagrams (GitHub Primer).
+Semgrep, the tests and GitHub are real. Waits are sped up SPEED times. Colours follow the brand palette in docs/brand/README.md.
 """
 
 import json
@@ -21,55 +21,55 @@ work = Path(tempfile.mkdtemp(prefix="openfix-demo-"))
 
 THEMES = {
     "dark": dict(
-        page="#0d1117",
+        page="#0a0e16",
         theme={
             "name": "openfix-dark",
-            "background": "#151b23",
-            "foreground": "#f0f6fc",
-            "selection": "#2e1c4f",
-            "cursor": "#ab7df8",
+            "background": "#0f141f",
+            "foreground": "#f2f5fa",
+            "selection": "#1d2a0b",
+            "cursor": "#c6f432",
             "black": "#484f58",
             "red": "#ff7b72",
-            "green": "#3fb950",
-            "yellow": "#d29922",
-            "blue": "#4493f8",
-            "magenta": "#ab7df8",
+            "green": "#c6f432",
+            "yellow": "#ffbe5c",
+            "blue": "#7db2ff",
+            "magenta": "#bfa2ff",
             "cyan": "#39c5cf",
             "white": "#b1bac4",
-            "brightBlack": "#7d8590",
+            "brightBlack": "#6c7689",
             "brightRed": "#ffa198",
-            "brightGreen": "#56d364",
-            "brightYellow": "#e3b341",
-            "brightBlue": "#79c0ff",
-            "brightMagenta": "#d2a8ff",
+            "brightGreen": "#d9fb6e",
+            "brightYellow": "#ffd08a",
+            "brightBlue": "#a9cbff",
+            "brightMagenta": "#d6c4ff",
             "brightCyan": "#56d4dd",
-            "brightWhite": "#f0f6fc",
+            "brightWhite": "#f2f5fa",
         },
     ),
     "light": dict(
         page="#ffffff",
         theme={
             "name": "openfix-light",
-            "background": "#f6f8fa",
-            "foreground": "#1f2328",
-            "selection": "#fbefff",
-            "cursor": "#8250df",
+            "background": "#f7f9fc",
+            "foreground": "#0a0e16",
+            "selection": "#eef9d2",
+            "cursor": "#6fa300",
             "black": "#24292f",
             "red": "#cf222e",
-            "green": "#1a7f37",
-            "yellow": "#9a6700",
-            "blue": "#0969da",
-            "magenta": "#8250df",
+            "green": "#456b00",
+            "yellow": "#b65a00",
+            "blue": "#1b5fd9",
+            "magenta": "#6a3bdb",
             "cyan": "#1b7c83",
             "white": "#6e7781",
-            "brightBlack": "#59636e",
+            "brightBlack": "#525c70",
             "brightRed": "#a40e26",
-            "brightGreen": "#116329",
-            "brightYellow": "#7d4e00",
-            "brightBlue": "#0550ae",
-            "brightMagenta": "#6639ba",
+            "brightGreen": "#355300",
+            "brightYellow": "#8f4700",
+            "brightBlue": "#144bb0",
+            "brightMagenta": "#5428c0",
             "brightCyan": "#3192aa",
-            "brightWhite": "#1f2328",
+            "brightWhite": "#0a0e16",
         },
     ),
 }
@@ -101,7 +101,7 @@ def rc(cfg: dict) -> str:
         r, g, b = (int(hexcolor[i : i + 2], 16) for i in (1, 3, 5))
         return f"\\e[38;2;{r};{g};{b}m"
 
-    accent, green, muted = rgb(t["magenta"]), rgb(t["green"]), rgb(t["brightBlack"])
+    accent, green, muted = rgb(t["green"]), rgb(t["green"]), rgb(t["brightBlack"])
     return f"""export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 BASH_SILENCE_DEPRECATION_WARNING=1
 export PATH="{VENV}:$PATH" GITHUB_TOKEN="$(gh auth token)"
 cd "{APP}"

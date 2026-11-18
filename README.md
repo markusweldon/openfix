@@ -2,7 +2,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.svg">
-  <img alt="OpenFix" src="docs/assets/logo-light.svg" width="420">
+  <img alt="OpenFix" src="docs/assets/logo-light.svg" width="440">
 </picture>
 
 **Turn scanner findings into verified fixes, with any model, under your policy.**
@@ -264,6 +264,7 @@ Formats are detected automatically. Pass several reports at once and duplicate f
 - [Verification and receipts](docs/receipts.md)
 - [Security model](docs/security-model.md): what OpenFix protects against, and what it doesn't
 - [Findings format](docs/findings-format.md)
+- [Brand and diagrams](docs/brand/README.md): logo, colours, type, and the script that draws the images
 - [Roadmap](ROADMAP.md)
 
 ## Status
