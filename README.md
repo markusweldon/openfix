@@ -61,7 +61,7 @@ One YAML file decides what is auto-fixed, what only gets a proposed patch, and w
 <td valign="top">
 
 ### 🧱 A small blast radius
-The agent has no shell, no network and no git. It can read, search and edit files, run your tests and re-run the scanner, and every write is checked against the policy. Tests run in a Docker container with networking off.
+The agent has no shell, no network and no git. It can read, search and edit files, run your tests and re-run the scanner, and every write is checked against the policy. Tests run in a Docker container with networking off. [Security model](docs/security-model.md)
 
 </td>
 </tr>
@@ -80,6 +80,8 @@ CLI and GitHub Action. SARIF in and SARIF out (with `fixes[]`). in-toto receipts
 </td>
 </tr>
 </table>
+
+<img alt="OpenFix security model. Untrusted inputs: scanner reports, handled as data with secrets redacted; repository code, which may hold prompt injection or malicious tests; and model output, which can only call the listed tools. Inside a disposable git worktree, the model can read and search files, edit files, run tests and rescan, and submit or give up, but has no shell, network or git, no paths outside the checkout, no protected paths and no writes past size limits. Tests run in a Docker sandbox: no network, a fresh container per command, all capabilities dropped, no-new-privileges, memory, CPU and process limits, and your user id rather than root. The only way out: code verifies, then a draft PR for verified autofix findings, then a person merges. Secrets stay outside: API keys never enter the sandbox, the prompts or the receipts." src="docs/assets/security-dark.svg" width="100%">
 
 ## Quick start
 
