@@ -135,6 +135,8 @@ CI runs this same flow on every push.
 
 ### The checks
 
+<img alt="How OpenFix proves a fix. Each check runs on the original code and then on the patched code. Rescan: your scanner reports the finding before, and it is gone with nothing new after, so the fix removed the real finding. Tests: a baseline is recorded before, and the suite does no worse after. Regression test, the key check: the test the model wrote must fail on the original code and pass with the fix, so it really exercises the bug. Review, optional: a second model approves the diff. If every required check passes the fix is verified and can become a draft PR; if any fails you get the patch and evidence only. The model is never asked whether it worked." src="docs/assets/proof-dark.svg" width="100%">
+
 | Check | What it proves |
 |---|---|
 | **Rescan** | The scanner reports the finding on the original code, **and** doesn't report it (or anything new) on the patched code. |
@@ -149,6 +151,8 @@ Each receipt is an [in-toto](https://in-toto.io) statement whose subject is the 
 ```bash
 openfix receipt verify .openfix/runs/<timestamp>/<finding-id> --repo .
 ```
+
+<img alt="An OpenFix receipt. receipt.json is an in-toto Statement v1 holding: the subject, sha256 of patch.diff; the finding; the policy decision and the policy's hash; the base commit; the author model, turns and cost; and the checks with their commands, exit codes and output. An optional receipt.sigstore.json signature comes from --sign. openfix receipt verify re-checks that it is a valid statement, that patch.diff matches the digest, that the base commit exists, and that the patch still applies." src="docs/assets/receipt-dark.svg" width="100%">
 
 ## Policy as code
 
@@ -195,6 +199,8 @@ Run `openfix providers` to see which credentials are set. Details: [docs/provide
 ### Run it on a schedule
 
 Put OpenFix on a schedule and it works as a remediation factory: your scanners' findings go in, and verified draft PRs come out. Nothing ships without proof, and a person still merges every fix. The workflow below runs every Monday at 06:00 UTC, and you can also start it by hand from the Actions tab. `max` caps how many findings one run attempts, and `max_usd_per_run` in [`openfix.yaml`](docs/policy.md) caps what a run can spend on the model.
+
+<img alt="OpenFix on a schedule. 1 Schedule: cron every Monday, or run it by hand. 2 Scan: Snyk, Semgrep, CodeQL or Trivy write SARIF. 3 Fix and verify: policy decides, the model patches, code proves it, within max and max_usd_per_run. 4 Draft PRs: one per verified fix, with an evidence table and the receipt digest, never auto-merged. 5 You merge: your CI runs and a person reviews and decides. The next run updates the same PR branch instead of opening a duplicate. Every run uploads receipts, summary.md and openfix.sarif as a workflow artifact." src="docs/assets/schedule-dark.svg" width="100%">
 
 ```yaml
 name: OpenFix
