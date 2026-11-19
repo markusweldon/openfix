@@ -60,7 +60,7 @@ One YAML file decides what is auto-fixed, what only gets a proposed patch, and w
 </td>
 <td valign="top">
 
-### 🧱 A small blast radius
+### 🧱 A contained blast radius
 The agent has no shell, no network and no git. It can read, search and edit files, run your tests and re-run the scanner, and every write is checked against the policy. Tests run in a Docker container with networking off. [Security model](docs/security-model.md)
 
 </td>

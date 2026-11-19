@@ -1050,7 +1050,7 @@ def security(T: dict) -> str:
         c,
         T,
         "SECURITY MODEL",
-        ("A small ", "blast radius."),
+        ("Nothing trusted. ", "Everything checked."),
         [
             ("no shell", T["text"]),
             (" · ", T["faint"]),
