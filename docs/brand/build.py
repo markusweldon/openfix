@@ -223,18 +223,22 @@ def mark(c: Canvas, x: float, y: float, size: float, tile: str, ink: str, rx_rat
     )
 
 
-def background(c: Canvas, T: dict, glow_at=(1.0, 0.0)) -> None:
+def background(c: Canvas, T: dict, glow_at=(1.0, 0.0), card: bool = True) -> None:
+    """The dot grid and glow. card=True draws a rounded, framed card; False fills edge to edge (social images,
+    which GitHub and LinkedIn crop and round themselves)."""
+    rx, inset = (20, 1) if card else (0, 0)
     c.defs.append(
         f'<pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r="1.1" fill="{T["dot"]}"/></pattern>'
         f'<radialGradient id="glow" cx="{glow_at[0]}" cy="{glow_at[1]}" r="0.75"><stop offset="0" stop-color="{T["glow"]}" stop-opacity="{T["glow_opacity"]}"/><stop offset="1" stop-color="{T["glow"]}" stop-opacity="0"/></radialGradient>'
-        f'<clipPath id="frame"><rect x="1" y="1" width="{c.w - 2}" height="{c.h - 2}" rx="20"/></clipPath>'
+        f'<clipPath id="frame"><rect x="{inset}" y="{inset}" width="{c.w - 2 * inset}" height="{c.h - 2 * inset}" rx="{rx}"/></clipPath>'
     )
-    c.rect(1, 1, c.w - 2, c.h - 2, 20, T["bg"])
+    c.rect(inset, inset, c.w - 2 * inset, c.h - 2 * inset, rx, T["bg"])
     c.add('<g clip-path="url(#frame)">')
     c.rect(0, 0, c.w, c.h, fill="url(#dots)")
     c.rect(0, 0, c.w, c.h, fill="url(#glow)")
     c.add("</g>")
-    c.rect(1, 1, c.w - 2, c.h - 2, 20, "none", T["frame"])
+    if card:
+        c.rect(1, 1, c.w - 2, c.h - 2, 20, "none", T["frame"])
 
 
 def headline(c: Canvas, T: dict, x, y, size, plain: str, hl: str = "", ls=-0.02, weight=700) -> None:
@@ -692,7 +696,7 @@ for _T in THEMES.values():
 
 def social(T: dict) -> str:
     c = Canvas(1280, 640, "OpenFix")
-    background(c, T, glow_at=(0.95, 0.05))
+    background(c, T, glow_at=(0.95, 0.05), card=False)
     mark(c, 96, 150, 132, T["tile"], T["tile_ink"])
     headline(c, T, 262, 248, 112, "Open", "Fix", ls=-0.035)
     headline(c, T, 100, 380, 54, "Models propose. ", "Code verifies.", ls=-0.025)
